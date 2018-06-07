@@ -32,6 +32,13 @@
 extern "C" {
 # endif
 
+typedef struct vlc_medialibrary_t vlc_medialibrary_t;
+struct vlc_medialibrary_t
+{
+    struct vlc_common_members obj;
+    void* p_sys;
+};
+
 /*****************************************************************************
  * ML Enums
  *****************************************************************************/

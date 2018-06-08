@@ -36,11 +36,11 @@ struct vlc_object_t;
 
 class Logger;
 
-inline std::unique_ptr<char, void (*)(void*)> wrapCStr(char* str)
+template <typename T>
+inline std::unique_ptr<T, void (*)(void*)> wrapCPtr( T* ptr )
 {
-    return std::unique_ptr<char, void(*)(void*)>( str, []( void* ptr ) {
-        free(ptr);
-    });
+    static_assert( std::is_pointer<T>::value == false, "T must be a non pointer type" );
+    return std::unique_ptr<T, decltype( &free )>( ptr, &free );
 }
 
 class MetadataExtractor : public medialibrary::parser::IParserService

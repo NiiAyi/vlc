@@ -160,7 +160,7 @@ MediaLibrary::MediaLibrary( vlc_object_t* obj )
 {
     m_ml->setVerbosity( medialibrary::LogLevel::Info );
     m_ml->setLogger( m_logger.get() );
-    auto userDir = wrapCStr( config_GetUserDir( VLC_USERDATA_DIR ) );
+    auto userDir = wrapCPtr( config_GetUserDir( VLC_USERDATA_DIR ) );
     std::string mlDir = std::string{ userDir.get() } + "/ml/";
 
     //tmp:

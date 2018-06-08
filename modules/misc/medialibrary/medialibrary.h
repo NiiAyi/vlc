@@ -48,11 +48,12 @@ class MetadataExtractor : public medialibrary::parser::IParserService
 private:
     struct ParseContext
     {
-        ParseContext( MetadataExtractor* mde )
+        ParseContext( MetadataExtractor* mde, medialibrary::parser::IItem& item )
             : inputItem( nullptr, &input_item_Release )
             , input( nullptr, &input_Close )
             , needsProbing( false )
             , mde( mde )
+            , item( item )
         {
             vlc_mutex_init( &m_mutex );
             vlc_cond_init( &m_cond );
@@ -69,6 +70,7 @@ private:
         vlc_mutex_t m_mutex;
         bool needsProbing;
         MetadataExtractor* mde;
+        medialibrary::parser::IItem& item;
     };
 
 public:
@@ -87,10 +89,12 @@ private:
     virtual void onRestarted() override;
 
     void onInputEvent( vlc_value_t event, ParseContext& ctx );
+    void onSubItemAdded( const vlc_event_t* event, ParseContext& ctx );
     void populateItem( medialibrary::parser::IItem& item, input_item_t* inputItem );
 
     static int onInputEvent( vlc_object_t*, const char*, vlc_value_t,
                              vlc_value_t cur, void* data );
+    static void onSubItemAdded( const vlc_event_t* event, void* data );
 
 private:
     vlc_object_t* m_obj;

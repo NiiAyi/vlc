@@ -125,9 +125,26 @@ int MetadataExtractor::onInputEvent( vlc_object_t*, const char*, vlc_value_t,
     return VLC_SUCCESS;
 }
 
+void MetadataExtractor::onSubItemAdded( const vlc_event_t* event, ParseContext& ctx )
+{
+    auto root = event->u.input_item_subitem_tree_added.p_root;
+    for ( auto i = 0; i < root->i_children; ++i )
+    {
+        auto it = root->pp_children[i]->p_item;
+        auto& subItem = ctx.item.createSubItem( it->psz_uri, i );
+        populateItem( subItem, it );
+    }
+}
+
+void MetadataExtractor::onSubItemAdded( const vlc_event_t* event, void* data )
+{
+    auto* ctx = reinterpret_cast<ParseContext*>( data );
+    ctx->mde->onSubItemAdded( event, *ctx );
+}
+
 medialibrary::parser::Status MetadataExtractor::run( medialibrary::parser::IItem& item )
 {
-    const std::unique_ptr<ParseContext> ctx( new ParseContext{ this } );
+    const std::unique_ptr<ParseContext> ctx( new ParseContext{ this, item } );
     ctx->inputItem = {
         input_item_New( item.mrl().c_str(), NULL ),
         &input_item_Release
@@ -135,6 +152,7 @@ medialibrary::parser::Status MetadataExtractor::run( medialibrary::parser::IItem
     if ( ctx->inputItem == nullptr )
         return medialibrary::parser::Status::Fatal;
 
+    ctx->inputItem->i_preparse_depth = 1;
     ctx->input = {
         input_CreatePreparser( m_obj, ctx->inputItem.get() ),
         &input_Close
@@ -143,6 +161,9 @@ medialibrary::parser::Status MetadataExtractor::run( medialibrary::parser::IItem
         return medialibrary::parser::Status::Fatal;
 
     var_AddCallback( ctx->input.get(), "intf-event", &MetadataExtractor::onInputEvent, ctx.get() );
+
+    vlc_event_attach( &ctx->inputItem->event_manager, vlc_InputItemSubItemTreeAdded,
+                      &MetadataExtractor::onSubItemAdded, ctx.get() );
 
     //FIXME: This create a useless thread
     input_Start( ctx->input.get() );

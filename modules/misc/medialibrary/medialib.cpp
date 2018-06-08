@@ -185,7 +185,7 @@ MediaLibrary::MediaLibrary( vlc_object_t* obj )
     auto res = m_ml->start();
     if ( res == false )
         throw std::runtime_error( "Failed to start medialibrary" );
-    m_ml->discover( "file:///home/chouquette/samples/thumbnail" );
+    m_ml->discover( "file:///home/chouquette/dev/medialibrary/test/samples/samples/playlist/same_folder/" );
     m_ml->reload();
 }
 

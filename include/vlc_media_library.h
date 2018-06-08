@@ -37,6 +37,35 @@ struct vlc_medialibrary_t
 {
     struct vlc_common_members obj;
     void* p_sys;
+
+    int (*pf_control)( vlc_medialibrary_t*, int i_query, va_list );
+};
+
+typedef struct ml_entrypoint_t ml_entrypoint_t;
+struct ml_entrypoint_t
+{
+    char* psz_mrl; /**< This entrypoint's MRL. Will be NULL if b_present is false */
+    bool b_present; /**< The presence state for this entrypoint. */
+    bool b_banned; /**< Will be true if the user required this entrypoint to be excluded */
+};
+
+VLC_API void vlc_ml_entrypoints_release( ml_entrypoint_t* p_list, size_t i_nb_items );
+
+enum ml_control
+{
+    /* Adds a folder to discover through the medialibrary */
+    ML_ADD_FOLDER,              /**< arg1: mrl (const char*)  res: can't fail */
+    ML_REMOVE_FOLDER,           /**< arg1: mrl (const char*)  res: can't fail */
+    ML_BAN_FOLDER,              /**< arg1: mrl (const char*)  res: can't fail */
+    ML_UNBAN_FOLDER,            /**< arg1: mrl (const char*)  res: can't fail */
+    ML_LIST_FOLDERS,            /**< arg1: entrypoints (ml_entrypoints**); arg2: nb results(size_t*), res: can fail */
+
+    /* Pause/resume background operations, such as media discovery & media analysis */
+    ML_PAUSE_BACKGROUND,        /**< no args; can't fail */
+    ML_RESUME_BACKGROUND,       /**< no args; can't fail */
+
+    /* Misc operations */
+    ML_CLEAR_HISTORY,           /**< no args; can't fail */
 };
 
 /*****************************************************************************

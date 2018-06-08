@@ -31,6 +31,8 @@
 #include <vlc_input_item.h>
 #include <vlc_input.h>
 
+#include <cstdarg>
+
 struct vlc_event_t;
 struct vlc_object_t;
 
@@ -120,6 +122,7 @@ class MediaLibrary : public medialibrary::IMediaLibraryCb
 {
 public:
     MediaLibrary( vlc_object_t* obj );
+    int Control( int query, va_list args );
 
 private:
     std::unique_ptr<Logger> m_logger;

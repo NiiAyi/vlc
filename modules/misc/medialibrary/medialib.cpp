@@ -27,6 +27,8 @@
 #include <vlc_media_library.h>
 #include "medialibrary.h"
 
+#include <medialibrary/IFolder.h>
+
 class Logger : public medialibrary::ILogger
 {
 public:
@@ -189,6 +191,86 @@ MediaLibrary::MediaLibrary( vlc_object_t* obj )
     m_ml->reload();
 }
 
+int MediaLibrary::Control( int query, va_list args )
+{
+    switch ( query )
+    {
+        case ML_ADD_FOLDER:
+        case ML_REMOVE_FOLDER:
+        case ML_BAN_FOLDER:
+        case ML_UNBAN_FOLDER:
+        {
+            const char* mrl = va_arg( args, const char* );
+            switch( query )
+            {
+                case ML_ADD_FOLDER:
+                    m_ml->discover( mrl );
+                    break;
+                case ML_REMOVE_FOLDER:
+                    m_ml->removeEntryPoint( mrl );
+                    break;
+                case ML_BAN_FOLDER:
+                    m_ml->banFolder( mrl );
+                    break;
+                case ML_UNBAN_FOLDER:
+                    m_ml->unbanFolder( mrl );
+                    break;
+            }
+            break;
+        }
+        case ML_LIST_FOLDERS:
+        {
+            auto entryPoints = m_ml->entryPoints()->all();
+            auto nbItem = entryPoints.size();
+            auto list = wrapCArray( reinterpret_cast<ml_entrypoint_t*>(
+                    calloc( entryPoints.size(), sizeof( ml_entrypoint_t ) ) ),
+                    [nbItem]( ml_entrypoint_t* ptr ) {
+                        vlc_ml_entrypoints_release( ptr, nbItem );
+                    });
+            if ( unlikely( list == nullptr ) )
+                return VLC_ENOMEM;
+            for ( auto i = 0u; i < entryPoints.size(); ++i )
+            {
+                const auto ep = entryPoints[i].get();
+                if ( ep->isPresent() == true )
+                {
+                    list[i].psz_mrl = strdup( ep->mrl().c_str() );
+                    if ( unlikely( list[i].psz_mrl == nullptr ) )
+                        return VLC_ENOMEM;
+                    list[i].b_present = true;
+                }
+                else
+                {
+                    list[i].psz_mrl = nullptr;
+                    list[i].b_present = false;
+                }
+                list[i].b_banned = ep->isBanned();
+            }
+            *(va_arg( args, ml_entrypoint_t**) ) = list.release();
+            *(va_arg( args, size_t*) ) = entryPoints.size();
+            break;
+        }
+        case ML_PAUSE_BACKGROUND:
+            m_ml->pauseBackgroundOperations();
+            break;
+        case ML_RESUME_BACKGROUND:
+            m_ml->resumeBackgroundOperations();
+            break;
+        case ML_CLEAR_HISTORY:
+            m_ml->clearHistory();
+            break;
+        default:
+            return VLC_EGENERIC;
+    }
+    return VLC_SUCCESS;
+}
+
+static int Control( vlc_medialibrary_t* module, int query, va_list args )
+{
+    auto ml = reinterpret_cast<MediaLibrary*>( module->p_sys );
+    return ml->Control( query, args );
+}
+
 static int Open( vlc_object_t* obj )
 {
     vlc_medialibrary_t* p_module = reinterpret_cast<vlc_medialibrary_t*>( obj );
@@ -202,12 +284,13 @@ static int Open( vlc_object_t* obj )
         msg_Err( obj, "Failed to instantiate/initialize medialibrary: %s", ex.what() );
         return VLC_EGENERIC;
     }
+    p_module->pf_control = Control;
     return VLC_SUCCESS;
 }
 
-static void Close( vlc_medialibrary_t* p_module )
+static void Close( vlc_medialibrary_t* module )
 {
-    MediaLibrary* p_ml = reinterpret_cast<MediaLibrary*>( p_module->p_sys );
+    MediaLibrary* p_ml = reinterpret_cast<MediaLibrary*>( module->p_sys );
     delete p_ml;
 }
 

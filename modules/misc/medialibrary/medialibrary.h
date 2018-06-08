@@ -43,6 +43,22 @@ inline std::unique_ptr<T, void (*)(void*)> wrapCPtr( T* ptr )
     return std::unique_ptr<T, decltype( &free )>( ptr, &free );
 }
 
+template <typename T, typename Releaser>
+inline std::unique_ptr<T, Releaser> wrapCPtr( T* ptr, Releaser&& r )
+{
+    static_assert( std::is_pointer<T>::value == false, "T must be a non pointer type" );
+    return std::unique_ptr<T, decltype( r )>( ptr, std::forward<Releaser>( r ) );
+}
+
+template <typename T> struct TD;
+
+template <typename T, typename Releaser>
+inline std::unique_ptr<T[], Releaser> wrapCArray( T* ptr, Releaser&& r )
+{
+    static_assert( std::is_pointer<T>::value == false, "T must be a non pointer type" );
+    return std::unique_ptr<T[], typename std::decay<decltype( r )>::type>( ptr, std::forward<Releaser>( r ) );
+}
+
 class MetadataExtractor : public medialibrary::parser::IParserService
 {
 private:

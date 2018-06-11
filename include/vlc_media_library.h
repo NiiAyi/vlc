@@ -58,7 +58,7 @@ enum ml_control
     ML_REMOVE_FOLDER,           /**< arg1: mrl (const char*)  res: can't fail */
     ML_BAN_FOLDER,              /**< arg1: mrl (const char*)  res: can't fail */
     ML_UNBAN_FOLDER,            /**< arg1: mrl (const char*)  res: can't fail */
-    ML_LIST_FOLDERS,            /**< arg1: entrypoints (ml_entrypoints**); arg2: nb results(size_t*), res: can fail */
+    ML_LIST_FOLDERS,            /**< arg1: entrypoints (ml_entrypoint_t**); arg2: nb results(size_t*), res: can fail */
 
     /* Pause/resume background operations, such as media discovery & media analysis */
     ML_PAUSE_BACKGROUND,        /**< no args; can't fail */
@@ -67,6 +67,47 @@ enum ml_control
     /* Misc operations */
     ML_CLEAR_HISTORY,           /**< no args; can't fail */
 };
+
+static inline void vlc_ml_add_folder( vlc_medialibrary_t* p_ml, const char* psz_folder )
+{
+    p_ml->pf_control( p_ml, ML_ADD_FOLDER, psz_folder );
+}
+
+static inline void vlc_ml_remove_folder( vlc_medialibrary_t* p_ml, const char* psz_folder )
+{
+    p_ml->pf_control( p_ml, ML_REMOVE_FOLDER, psz_folder );
+}
+
+static inline void vlc_ml_ban_folder( vlc_medialibrary_t* p_ml, const char* psz_folder )
+{
+    p_ml->pf_control( p_ml, ML_BAN_FOLDER, psz_folder );
+}
+
+static inline void vlc_ml_unban_folder( vlc_medialibrary_t* p_ml, const char* psz_folder )
+{
+    p_ml->pf_control( p_ml, ML_UNBAN_FOLDER, psz_folder );
+}
+
+static inline int vlc_ml_list_folder( vlc_medialibrary_t* p_ml,
+                                      ml_entrypoint_t** pp_entrypoints, size_t* p_nb_items )
+{
+    return p_ml->pf_control( p_ml, ML_LIST_FOLDERS, pp_entrypoints, p_nb_items );
+}
+
+static inline void vlc_ml_pause_background( vlc_medialibrary_t* p_ml )
+{
+    p_ml->pf_control( p_ml, ML_PAUSE_BACKGROUND );
+}
+
+static inline void vlc_ml_resume_background( vlc_medialibrary_t* p_ml )
+{
+    p_ml->pf_control( p_ml, ML_RESUME_BACKGROUND );
+}
+
+static inline  void vlc_ml_clear_history( vlc_medialibrary_t* p_ml )
+{
+    p_ml->pf_control( p_ml, ML_CLEAR_HISTORY );
+}
 
 /*****************************************************************************
  * ML Enums

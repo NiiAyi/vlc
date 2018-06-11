@@ -265,10 +265,14 @@ int MediaLibrary::Control( int query, va_list args )
     return VLC_SUCCESS;
 }
 
-static int Control( vlc_medialibrary_t* module, int query, va_list args )
+static int Control( vlc_medialibrary_t* module, int query, ... )
 {
+    va_list args;
+    va_start( args, query );
     auto ml = reinterpret_cast<MediaLibrary*>( module->p_sys );
-    return ml->Control( query, args );
+    int res = ml->Control( query, args );
+    va_end( args );
+    return res;
 }
 
 static int Open( vlc_object_t* obj )

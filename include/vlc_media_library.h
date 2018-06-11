@@ -38,7 +38,7 @@ struct vlc_medialibrary_t
     struct vlc_common_members obj;
     void* p_sys;
 
-    int (*pf_control)( vlc_medialibrary_t*, int i_query, va_list );
+    int (*pf_control)( vlc_medialibrary_t*, int i_query, ... );
 };
 
 typedef struct ml_entrypoint_t ml_entrypoint_t;

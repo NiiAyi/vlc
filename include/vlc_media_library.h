@@ -32,13 +32,62 @@
 extern "C" {
 # endif
 
+typedef enum ml_sorting_criteria
+{
+    ML_SORT_DEFAULT,
+} ml_sorting_criteria;
+
+typedef struct ml_search_filters_t ml_search_filters_t;
+struct ml_search_filters_t
+{
+    const char* psz_pattern;
+    ml_sorting_criteria i_sort;
+    uint32_t i_nbResults;
+    uint32_t i_offset;
+    bool b_desc;
+};
+
+typedef struct ml_list_filters_t ml_list_filters_t;
+struct ml_list_filters_t
+{
+    ml_sorting_criteria i_sort;
+    uint32_t i_nbResults;
+    uint32_t i_offset;
+    bool b_desc;
+};
+
 typedef struct vlc_medialibrary_t vlc_medialibrary_t;
 struct vlc_medialibrary_t
 {
     struct vlc_common_members obj;
     void* p_sys;
 
-    int (*pf_control)( vlc_medialibrary_t*, int i_query, ... );
+    int (*pf_control)( vlc_medialibrary_t* p_ml, int i_query, ... );
+    /**
+     * Search for some medialibrary entries.
+     *
+     * \param p_ml The medialibrary module instance.
+     * \param i_query The type search to be performed. \see ml_search enumeration
+     * \param p_filter A pointer to a search filter structure. Cannot be NULL.
+     *
+     * Refer to the individual list of ml_search requests for the additional
+     * per-query parameters.
+     */
+    int (*pf_search)( vlc_medialibrary_t* p_ml, int i_query,
+                      const ml_search_filters_t* p_filter, ... );
+    /**
+     * List some entities from the medialibrary.
+     *
+     * \param p_ml The medialibrary module instance.
+     * \param i_query The type search to be performed. \see ml_list enumeration
+     * \param p_filter A pointer to a list filter structure, or NULL for the default
+     * filters (alphabetical ascending sort, no pagination)
+     *
+     * Refer to the individual list of ml_search requests for the additional
+     * per-query parameters.
+     */
+    int (*pf_list)( vlc_medialibrary_t* p_ml, int i_query,
+                    const ml_list_filters_t* p_filter, ... );
 };
 
 typedef struct ml_entrypoint_t ml_entrypoint_t;
@@ -48,8 +97,6 @@ struct ml_entrypoint_t
     bool b_present; /**< The presence state for this entrypoint. */
     bool b_banned; /**< Will be true if the user required this entrypoint to be excluded */
 };
-
-VLC_API void vlc_ml_entrypoints_release( ml_entrypoint_t* p_list, size_t i_nb_items );
 
 enum ml_control
 {
@@ -66,6 +113,22 @@ enum ml_control
 
     /* Misc operations */
     ML_CLEAR_HISTORY,           /**< no args; can't fail */
+};
+
+enum ml_search
+{
+    /* Search all videos known by the medialibrary */
+    ML_SEARCH_VIDEOS,           /**< No args;   res: can fail */
+    ML_SEARCH_AUDIOS,           /**< No args;   res: can fail */
+    ML_SEARCH_ALBUMS,           /**< No args;   res: can fail */
+};
+
+enum ml_list
+{
+    /* List tracks of an album.             arg1: The album id. res: can fail */
+    ML_LIST_ALBUM_TRACKS,
+    /* Lit the albums of an artist.         arg1: The artist id. res: can fail */
+    ML_LIST_ARTIST_ALBUMS,
 };
 
 static inline void vlc_ml_add_folder( vlc_medialibrary_t* p_ml, const char* psz_folder )
@@ -108,6 +171,8 @@ static inline  void vlc_ml_clear_history( vlc_medialibrary_t* p_ml )
 {
     p_ml->pf_control( p_ml, ML_CLEAR_HISTORY );
 }
+
+VLC_API void vlc_ml_entrypoints_release( ml_entrypoint_t* p_list, size_t i_nb_items );
 
 /*****************************************************************************
  * ML Enums

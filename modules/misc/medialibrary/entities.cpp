@@ -125,7 +125,6 @@ void Release( ml_movie_t& movie )
 void Release( ml_media_t& media )
 {
     ReleaseList( media.p_files );
-    ReleaseList( media.p_labels );
     free( media.psz_title );
     free( media.psz_artwork_mrl );
     switch( media.i_subtype )
@@ -214,11 +213,6 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
     auto files = input->files();
     output.p_files = ml_convert_list<ml_file_list_t>( files );
     if ( output.p_files == nullptr )
-        return false;
-
-    auto labels = input->labels()->all();
-    output.p_labels = ml_convert_list<ml_label_list_t>( labels );
-    if ( output.p_labels == nullptr )
         return false;
 
     if ( input->isThumbnailGenerated() == true )

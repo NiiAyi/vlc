@@ -407,6 +407,14 @@ void* MediaLibrary::List( int query, const ml_query_params_t* params, va_list ar
             auto query = genre->albums( paramsPtr );
             return ml_convert_list<ml_album_list_t>( query->items( nbItems, offset ) );
         }
+        case ML_LIST_MEDIA_LABELS:
+        {
+            auto media = m_ml->media( va_arg( args, int64_t ) );
+            if ( media == nullptr )
+                return nullptr;
+            auto query = media->labels();
+            return ml_convert_list<ml_label_list_t>( query->items( nbItems, offset ) );
+        }
     }
     return nullptr;
 }

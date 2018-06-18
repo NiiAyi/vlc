@@ -152,8 +152,6 @@ typedef struct ml_media_t
     uint32_t i_playcount;
     char* psz_title;
 
-    ml_label_list_t* p_labels;
-
     char* psz_artwork_mrl;
     bool b_is_favorite;
 
@@ -440,6 +438,9 @@ enum ml_list_queries
     ML_LIST_GENRE_ARTISTS,    /**< arg1: genre id;  res: can fail; ret: ml_artist_list_t* */
     ML_LIST_GENRE_TRACKS,     /**< arg1: genre id;  res: can fail; ret: ml_media_list_t* */
     ML_LIST_GENRE_ALBUMS,     /**< arg1: genre id;  res: can fail; ret: ml_album_list_t* */
+
+    /* Media specific listings */
+    ML_LIST_MEDIA_LABELS,     /**< arg1: media id;  res: can fail; ret: ml_label_list_t* */
 };
 
 static inline ml_media_list_t* ml_list_album_tracks( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_album_id )
@@ -492,6 +493,10 @@ static inline ml_album_list_t* ml_list_genre_albums( vlc_medialibrary_t* p_ml, m
     return (ml_album_list_t*)p_ml->pf_list( p_ml, ML_LIST_GENRE_ALBUMS, params, i_genre_id );
 }
 
+static inline ml_label_list_t* ml_list_media_labels( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_media_id )
+{
+    return (ml_label_list_t*)p_ml->pf_list( p_ml, ML_LIST_MEDIA_LABELS, params, i_media_id );
+}
 
 
 #define vlc_ml_release( obj ) (obj)->pf_release( ( obj ) )

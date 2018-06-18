@@ -297,7 +297,7 @@ bool Convert( const medialibrary::IAlbum* input, ml_album_t& output )
             return false;
     }
     auto artist = input->albumArtist();
-    if ( artist != nullptr && artist->id() )
+    if ( artist != nullptr )
     {
         output.i_artist_id = artist->id();
         switch ( artist->id() )

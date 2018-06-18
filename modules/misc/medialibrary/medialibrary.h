@@ -124,7 +124,7 @@ class MediaLibrary : public medialibrary::IMediaLibraryCb
 public:
     MediaLibrary( vlc_object_t* obj );
     int Control( int query, va_list args );
-    void* List( int query, const ml_query_params_t* params, va_list args );
+    int List( int query, const ml_query_params_t* params, va_list args );
     void* Get( int query, int64_t id );
 
 private:

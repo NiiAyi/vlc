@@ -432,11 +432,6 @@ void* MediaLibrary::Get( int query, int64_t id )
             auto show = m_ml->show( id );
             return CreateAndConvert<ml_show_t>( show.get() );
         }
-        case ML_GET_MOVIE:
-        {
-            auto movie = m_ml->movie( id );
-            return CreateAndConvert<ml_movie_t>( movie.get() );
-        }
         default:
             vlc_assert_unreachable();
 

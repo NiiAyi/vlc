@@ -51,8 +51,6 @@ bool Convert( const medialibrary::IAlbumTrack* input, ml_album_track_t& output )
 
 bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_show_episode_t*)>( &ReleaseRef );
-    output.i_id = input->id();
     output.i_episode_nb = input->episodeNumber();
     output.i_season_number = input->seasonNumber();
     if ( input->name().empty() == false )
@@ -92,8 +90,6 @@ void Release( ml_show_episode_t& episode )
 
 bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_movie_t*)>( &ReleaseRef );
-    output.i_id = input->id();
     output.psz_title = strdup( input->title().c_str() );
     if ( unlikely( output.psz_title == nullptr ) )
         return false;

@@ -63,9 +63,6 @@ typedef enum ml_file_type_t
 
 typedef struct ml_movie_t
 {
-    void (*pf_release)( struct ml_movie_t* );
-
-    int64_t i_id;
     char* psz_title;
     char* psz_summary;
     char* psz_artwork_mrl;
@@ -74,9 +71,6 @@ typedef struct ml_movie_t
 
 typedef struct ml_show_episode_t
 {
-    void (*pf_release)( struct ml_show_episode_t* );
-
-    int64_t i_id;
     char* psz_artwork_mrl;
     char* psz_name;
     char* psz_summary;
@@ -395,7 +389,6 @@ enum ml_get_queries
     ML_GET_ARTIST,          /**< arg1: Artist ID; ret: ml_artist_t* */
     ML_GET_GENRE,           /**< arg1: Genre  ID; ret: ml_genre_t*  */
     ML_GET_SHOW,            /**< arg1: Show   ID; ret: ml_show_t*   */
-    ML_GET_MOVIE,           /**< arg1: Movie  ID; ret: ml_movie_t*  */
 };
 
 static inline ml_media_t* ml_get_media( vlc_medialibrary_t* p_ml, int64_t i_media_id )
@@ -421,11 +414,6 @@ static inline ml_genre_t* ml_get_genre( vlc_medialibrary_t* p_ml, int64_t i_genr
 static inline ml_show_t* ml_get_show( vlc_medialibrary_t* p_ml, int64_t i_show_id )
 {
     return (ml_show_t*)p_ml->pf_get( p_ml, ML_GET_SHOW, i_show_id );
-}
-
-static inline ml_movie_t* ml_get_movie( vlc_medialibrary_t* p_ml, int64_t i_movie_id )
-{
-    return (ml_movie_t*)p_ml->pf_get( p_ml, ML_GET_MOVIE, i_movie_id );
 }
 
 enum ml_list_queries

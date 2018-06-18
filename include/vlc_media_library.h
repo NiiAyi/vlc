@@ -89,8 +89,8 @@ typedef struct ml_show_t
     char* psz_artwork_mrl;
     char* psz_tvdb_id;
     unsigned int i_release_year;
-    int i_episode_nb;
-    int i_season_nb;
+    uint32_t i_nb_episodes;
+    uint32_t i_nb_seasons;
 } ml_show_t;
 
 typedef struct ml_album_track_t

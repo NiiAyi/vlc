@@ -402,8 +402,8 @@ bool Convert( const medialibrary::IShow* input, ml_show_t& output )
     output.pf_release = static_cast<void(*)(ml_show_t*)>( &ReleaseRef );
     output.i_id = input->id();
     output.i_release_year = input->releaseDate();
-    output.i_episode_nb = input->nbEpisodes();
-    output.i_season_nb = input->nbSeasons();
+    output.i_nb_episodes = input->nbEpisodes();
+    output.i_nb_seasons = input->nbSeasons();
     if ( input->name().empty() == false )
     {
         output.psz_name = strdup( input->name().c_str() );

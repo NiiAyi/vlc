@@ -350,6 +350,14 @@ void* MediaLibrary::List( int query, const ml_query_params_t* params, va_list ar
             auto query = artist->albums( paramsPtr );
             return ml_convert_list<ml_album_list_t>( query->items( nbItems, offset ) );
         }
+        case ML_LIST_ARTIST_TRACKS:
+        {
+            auto artist = m_ml->artist( va_arg( args, int64_t ) );
+            if ( artist == nullptr )
+                return nullptr;
+            auto query = artist->media( paramsPtr );
+            return ml_convert_list<ml_media_list_t>( query->items( nbItems, offset ) );
+        }
         case ML_LIST_VIDEOS:
         {
             auto query = m_ml->videoFiles( paramsPtr );

@@ -158,8 +158,7 @@ typedef struct ml_media_t
     uint32_t i_playcount;
     char* psz_title;
 
-    size_t i_labels;
-    char** p_labels;
+    ml_label_list_t* p_labels;
 
     char* psz_artwork_mrl;
     bool b_is_favorite;

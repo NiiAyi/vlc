@@ -193,6 +193,7 @@ typedef struct ml_album_t {
     char* psz_summary;
     char* psz_artwork_mrl;
     char* psz_artist;
+    int64_t i_artist_id;
 
     ml_artist_list_t* p_featuring;
 

@@ -419,29 +419,38 @@ enum ml_list_queries
 {
     /* General listing: */
 
-    ML_LIST_VIDEOS,           /**< arg1 (out): ml_media_list_t**   */
-    ML_LIST_AUDIOS,           /**< arg1 (out): ml_media_list_t**   */
-    ML_LIST_ALBUMS,           /**< arg1 (out): ml_album_list_t**   */
-    ML_LIST_GENRES,           /**< arg1 (out): ml_genre_list_t**   */
-    ML_LIST_ARTISTS,          /**< arg1 (out): ml_genre_list_t**   */
+    ML_LIST_VIDEOS,           /**< arg1 (out): ml_media_list_t**    */
+    ML_COUNT_VIDEOS,          /**< arg1 (out): size_t*              */
+    ML_LIST_AUDIOS,           /**< arg1 (out): ml_media_list_t**    */
+    ML_COUNT_AUDIOS,          /**< arg1 (out): size_t*              */
+    ML_LIST_ALBUMS,           /**< arg1 (out): ml_album_list_t**    */
+    ML_COUNT_ALBUMS,          /**< arg1 (out): size_t*              */
+    ML_LIST_GENRES,           /**< arg1 (out): ml_genre_list_t**    */
+    ML_COUNT_GENRES,          /**< arg1 (out): size_t*              */
+    ML_LIST_ARTISTS,          /**< arg1 (out): ml_genre_list_t**    */
+    ML_COUNT_ARTISTS,         /**< arg1 (out): size_t*              */
 
     /* Album specific listings */
-    /* List tracks of an album.         arg1: The album id. arg2 (out): ml_media_list_t** */
-    ML_LIST_ALBUM_TRACKS,
+    ML_LIST_ALBUM_TRACKS,     /**< arg1: The album id. arg2 (out): ml_media_list_t**  */
+    ML_COUNT_ALBUM_TRACKS,    /**< arg1: The album id. arg2 (out): size_t**  */
 
     /* Artist specific listings */
-    /* List the albums of an artist.    arg1: The artist id. arg2(out): ml_album_list_t** */
-    ML_LIST_ARTIST_ALBUMS,
-    /* List an artist tracks.           arg1: The artist id. arg2(out): ml_media_list_t** */
-    ML_LIST_ARTIST_TRACKS,
+    ML_LIST_ARTIST_ALBUMS,  /**< arg1: The artist id. arg2(out): ml_album_list_t**    */
+    ML_COUNT_ARTIST_ALBUMS, /**< arg1: The artist id. arg2(out): size_t*              */
+    ML_LIST_ARTIST_TRACKS,  /**< arg1: The artist id. arg2(out): ml_media_list_t**    */
+    ML_COUNT_ARTIST_TRACKS, /**< arg1: The artist id. arg2(out): size_t*              */
 
     /* Genre specific listings */
     ML_LIST_GENRE_ARTISTS,    /**< arg1: genre id;  arg2 (out): ml_artist_list_t**  */
+    ML_COUNT_GENRE_ARTISTS,   /**< arg1: genre id;  arg2 (out): size_t*             */
     ML_LIST_GENRE_TRACKS,     /**< arg1: genre id;  arg2 (out): ml_media_list_t**   */
+    ML_COUNT_GENRE_TRACKS,    /**< arg1: genre id;  arg2 (out): size_t*             */
     ML_LIST_GENRE_ALBUMS,     /**< arg1: genre id;  arg2 (out): ml_album_list_t**   */
+    ML_COUNT_GENRE_ALBUMS,    /**< arg1: genre id;  arg2 (out): size_t*             */
 
     /* Media specific listings */
     ML_LIST_MEDIA_LABELS,     /**< arg1: media id;  arg2 (out) ml_label_list_t**    */
+    ML_COUNT_MEDIA_LABELS,    /**< arg1: media id;  arg2 (out) size_t*              */
 };
 
 static inline ml_media_list_t* ml_list_album_tracks( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_album_id )
@@ -452,12 +461,28 @@ static inline ml_media_list_t* ml_list_album_tracks( vlc_medialibrary_t* p_ml, m
     return res;
 }
 
+static inline size_t ml_count_album_tracks( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_album_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_ALBUM_TRACKS, params, i_album_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
+
 static inline ml_album_list_t* ml_list_artist_albums( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_artist_id )
 {
     ml_album_list_t* res;
     if ( p_ml->pf_list( p_ml, ML_LIST_ARTIST_ALBUMS, params, i_artist_id, &res ) != VLC_SUCCESS )
         return NULL;
     return res;
+}
+
+static inline size_t ml_count_artist_albums( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_artist_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_ARTIST_ALBUMS, params, i_artist_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
 }
 
 static inline ml_media_list_t* ml_list_artist_tracks( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_artist_id )
@@ -468,12 +493,28 @@ static inline ml_media_list_t* ml_list_artist_tracks( vlc_medialibrary_t* p_ml, 
     return res;
 }
 
+static inline size_t ml_count_artist_tracks( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_artist_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_ARTIST_TRACKS, params, i_artist_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
+
 static inline ml_media_list_t* ml_list_video_media( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
 {
     ml_media_list_t* res;
     if ( p_ml->pf_list( p_ml, ML_LIST_VIDEOS, params, &res ) != VLC_SUCCESS )
         return NULL;
     return res;
+}
+
+static inline size_t ml_count_video_media( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_VIDEOS, params, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
 }
 
 static inline ml_media_list_t* ml_list_audio_media( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
@@ -484,12 +525,28 @@ static inline ml_media_list_t* ml_list_audio_media( vlc_medialibrary_t* p_ml, ml
     return res;
 }
 
+static inline size_t ml_count_audio_media( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_AUDIOS, params, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
+
 static inline ml_album_list_t* ml_list_albums( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
 {
     ml_album_list_t* res;
     if ( p_ml->pf_list( p_ml, ML_LIST_ALBUMS, params, &res ) != VLC_SUCCESS )
         return NULL;
     return res;
+}
+
+static inline size_t ml_count_albums( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_ALBUMS, params, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
 }
 
 static inline ml_genre_list_t* ml_list_genres( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
@@ -500,12 +557,28 @@ static inline ml_genre_list_t* ml_list_genres( vlc_medialibrary_t* p_ml, ml_quer
     return res;
 }
 
+static inline size_t ml_count_genres( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_GENRES, params, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
+
 static inline ml_artist_list_t* ml_list_artists( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
 {
     ml_artist_list_t* res;
     if ( p_ml->pf_list( p_ml, ML_LIST_ARTISTS, params, &res ) != VLC_SUCCESS )
         return NULL;
     return res;
+}
+
+static inline size_t ml_count_artists( vlc_medialibrary_t* p_ml, ml_query_params_t* params )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_ARTISTS, params, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
 }
 
 static inline ml_media_list_t* ml_list_genre_artists( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_genre_id )
@@ -516,12 +589,28 @@ static inline ml_media_list_t* ml_list_genre_artists( vlc_medialibrary_t* p_ml, 
     return res;
 }
 
+static inline size_t ml_count_genre_artists( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_genre_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_GENRE_ARTISTS, params, i_genre_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
+
 static inline ml_media_list_t* ml_list_genre_tracks( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_genre_id )
 {
     ml_media_list_t* res;
     if ( p_ml->pf_list( p_ml, ML_LIST_GENRE_TRACKS, params, i_genre_id, &res ) != VLC_SUCCESS )
         return NULL;
     return res;
+}
+
+static inline size_t ml_count_genre_tracks( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_genre_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_GENRE_TRACKS, params, i_genre_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
 }
 
 static inline ml_album_list_t* ml_list_genre_albums( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_genre_id )
@@ -532,6 +621,14 @@ static inline ml_album_list_t* ml_list_genre_albums( vlc_medialibrary_t* p_ml, m
     return res;
 }
 
+static inline size_t ml_count_genre_albums( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_genre_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_COUNT_GENRE_ALBUMS, params, i_genre_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
+
 static inline ml_label_list_t* ml_list_media_labels( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_media_id )
 {
     ml_label_list_t* res;
@@ -540,6 +637,13 @@ static inline ml_label_list_t* ml_list_media_labels( vlc_medialibrary_t* p_ml, m
     return res;
 }
 
+static inline size_t ml_count_media_labels( vlc_medialibrary_t* p_ml, ml_query_params_t* params, int64_t i_media_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, ML_LIST_MEDIA_LABELS, params, i_media_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
 
 #define vlc_ml_release( obj ) (obj)->pf_release( ( obj ) )
 

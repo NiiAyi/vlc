@@ -280,7 +280,7 @@ int MediaLibrary::Control( int query, va_list args )
     return VLC_SUCCESS;
 }
 
-int MediaLibrary::List( int query, const ml_query_params_t* params, va_list args )
+int MediaLibrary::List( int listQuery, const ml_query_params_t* params, va_list args )
 {
     medialibrary::QueryParameters p{};
     medialibrary::QueryParameters* paramsPtr = nullptr;
@@ -332,38 +332,73 @@ int MediaLibrary::List( int query, const ml_query_params_t* params, va_list args
         offset = params->i_offset;
         paramsPtr = &p;
     }
-    switch( query )
+    switch( listQuery )
     {
         case ML_LIST_ALBUM_TRACKS:
+        case ML_COUNT_ALBUM_TRACKS:
         {
             auto album = m_ml->album( va_arg( args, int64_t ) );
             if ( album == nullptr )
                 return VLC_EGENERIC;
             auto query = album->tracks( paramsPtr );
-            auto res = ml_convert_list<ml_media_list_t>( query->items( nbItems, offset ) );
-            *va_arg( args, ml_media_list_t**) = res;
+            switch ( listQuery )
+            {
+                case ML_LIST_ALBUM_TRACKS:
+                    *va_arg( args, ml_media_list_t**) = ml_convert_list<ml_media_list_t>(
+                                query->items( nbItems, offset ) );
+                    break;
+                case ML_COUNT_ALBUM_TRACKS:
+                    *va_arg( args, size_t* ) = query->count();
+                    break;
+                default:
+                    vlc_assert_unreachable();
+            }
             break;
         }
         case ML_LIST_ARTIST_ALBUMS:
+        case ML_COUNT_ARTIST_ALBUMS:
         case ML_LIST_ARTIST_TRACKS:
+        case ML_COUNT_ARTIST_TRACKS:
         {
             auto artist = m_ml->artist( va_arg( args, int64_t ) );
             if ( artist == nullptr )
                 return VLC_EGENERIC;
-            switch( query )
+            switch( listQuery )
             {
                 case ML_LIST_ARTIST_ALBUMS:
+                case ML_COUNT_ARTIST_ALBUMS:
                 {
                     auto query = artist->albums( paramsPtr );
-                    auto res = ml_convert_list<ml_album_list_t>( query->items( nbItems, offset ) );
-                    *va_arg( args, ml_album_list_t**) = res;
+                    switch ( listQuery )
+                    {
+                        case ML_LIST_ARTIST_ALBUMS:
+                            *va_arg( args, ml_album_list_t**) = ml_convert_list<ml_album_list_t>(
+                                        query->items( nbItems, offset ) );
+                            break;
+                        case ML_COUNT_ARTIST_ALBUMS:
+                            *va_arg( args, size_t* ) = query->count();
+                            break;
+                        default:
+                            vlc_assert_unreachable();
+                    }
                     break;
                 }
                 case ML_LIST_ARTIST_TRACKS:
+                case ML_COUNT_ARTIST_TRACKS:
                 {
                     auto query = artist->media( paramsPtr );
-                    auto res = ml_convert_list<ml_media_list_t>( query->items( nbItems, offset ) );
-                    *va_arg( args, ml_media_list_t**) = res;
+                    switch ( listQuery )
+                    {
+                        case ML_LIST_ARTIST_TRACKS:
+                            *va_arg( args, ml_media_list_t**) = ml_convert_list<ml_media_list_t>(
+                                        query->items( nbItems, offset ) );
+                            break;
+                        case ML_COUNT_ARTIST_TRACKS:
+                            *va_arg( args, size_t* ) = query->count();
+                            break;
+                        default:
+                            vlc_assert_unreachable();
+                    }
                     break;
                 }
                 default:
@@ -378,11 +413,23 @@ int MediaLibrary::List( int query, const ml_query_params_t* params, va_list args
             *va_arg( args, ml_media_list_t**) = res;
             break;
         }
+        case ML_COUNT_VIDEOS:
+        {
+            auto query = m_ml->videoFiles( paramsPtr );
+            *va_arg( args, size_t* ) = query->count();
+            break;
+        }
         case ML_LIST_AUDIOS:
         {
             auto query = m_ml->audioFiles( paramsPtr );
             auto res = ml_convert_list<ml_media_list_t>( query->items( nbItems, offset ) );
             *va_arg( args, ml_media_list_t**) = res;
+            break;
+        }
+        case ML_COUNT_AUDIOS:
+        {
+            auto query = m_ml->audioFiles( paramsPtr );
+            *va_arg( args, size_t* ) = query->count();
             break;
         }
         case ML_LIST_ALBUMS:
@@ -392,11 +439,23 @@ int MediaLibrary::List( int query, const ml_query_params_t* params, va_list args
             *va_arg( args, ml_album_list_t**) = res;
             break;
         }
+        case ML_COUNT_ALBUMS:
+        {
+            auto query = m_ml->albums( paramsPtr );
+            *va_arg( args, size_t* ) = query->count();
+            break;
+        }
         case ML_LIST_GENRES:
         {
             auto query = m_ml->genres( paramsPtr );
             auto res = ml_convert_list<ml_genre_list_t>( query->items( nbItems, offset ) );
             *va_arg( args, ml_genre_list_t**) = res;
+            break;
+        }
+        case ML_COUNT_GENRES:
+        {
+            auto query = m_ml->genres( paramsPtr );
+            *va_arg( args, size_t* ) = query->count();
             break;
         }
         case ML_LIST_ARTISTS:
@@ -406,34 +465,75 @@ int MediaLibrary::List( int query, const ml_query_params_t* params, va_list args
             *va_arg( args, ml_artist_list_t**) = res;
             break;
         }
+        case ML_COUNT_ARTISTS:
+        {
+            auto query = m_ml->artists( paramsPtr );
+            *va_arg( args, size_t* ) = query->count();
+            break;
+        }
         case ML_LIST_GENRE_ARTISTS:
+        case ML_COUNT_GENRE_ARTISTS:
         case ML_LIST_GENRE_TRACKS:
+        case ML_COUNT_GENRE_TRACKS:
         case ML_LIST_GENRE_ALBUMS:
+        case ML_COUNT_GENRE_ALBUMS:
         {
             auto genre = m_ml->genre( va_arg( args, int64_t ) );
             if ( genre == nullptr )
                 return VLC_EGENERIC;
-            switch( query )
+            switch( listQuery )
             {
                 case ML_LIST_GENRE_ARTISTS:
+                case ML_COUNT_GENRE_ARTISTS:
                 {
                     auto query = genre->artists( paramsPtr );
-                    auto res = ml_convert_list<ml_artist_list_t>( query->items( nbItems, offset ) );
-                    *va_arg( args, ml_artist_list_t**) = res;
+                    switch ( listQuery )
+                    {
+                        case ML_LIST_GENRE_ARTISTS:
+                            *va_arg( args, ml_artist_list_t**) = ml_convert_list<ml_artist_list_t>(
+                                            query->items( nbItems, offset ) );
+                            break;
+                        case ML_COUNT_GENRE_ARTISTS:
+                            *va_arg( args, size_t* ) = query->count();
+                            break;
+                        default:
+                            vlc_assert_unreachable();
+                    }
                     break;
                 }
                 case ML_LIST_GENRE_TRACKS:
+                case ML_COUNT_GENRE_TRACKS:
                 {
                     auto query = genre->tracks( paramsPtr );
-                    auto res = ml_convert_list<ml_media_list_t>( query->items( nbItems, offset ) );
-                    *va_arg( args, ml_media_list_t**) = res;
+                    switch ( listQuery )
+                    {
+                        case ML_LIST_GENRE_TRACKS:
+                            *va_arg( args, ml_media_list_t**) = ml_convert_list<ml_media_list_t>( query->items( nbItems, offset ) );
+                            break;
+                        case ML_COUNT_GENRE_TRACKS:
+                            *va_arg( args, size_t*) = query->count();
+                            break;
+                        default:
+                            vlc_assert_unreachable();
+                    }
                     break;
                 }
                 case ML_LIST_GENRE_ALBUMS:
+                case ML_COUNT_GENRE_ALBUMS:
                 {
                     auto query = genre->albums( paramsPtr );
-                    auto res = ml_convert_list<ml_album_list_t>( query->items( nbItems, offset ) );
-                    *va_arg( args, ml_album_list_t**) = res;
+                    switch ( listQuery )
+                    {
+                        case ML_LIST_GENRE_ALBUMS:
+                            *va_arg( args, ml_album_list_t**) = ml_convert_list<ml_album_list_t>(
+                                        query->items( nbItems, offset ) );
+                            break;
+                        case ML_COUNT_GENRE_ALBUMS:
+                            *va_arg( args, size_t* ) = query->count();
+                            break;
+                        default:
+                            vlc_assert_unreachable();
+                    }
                     break;
                 }
                 default:
@@ -441,13 +541,25 @@ int MediaLibrary::List( int query, const ml_query_params_t* params, va_list args
             }
         }
         case ML_LIST_MEDIA_LABELS:
+        case ML_COUNT_MEDIA_LABELS:
         {
             auto media = m_ml->media( va_arg( args, int64_t ) );
             if ( media == nullptr )
                 return VLC_EGENERIC;
             auto query = media->labels();
-            auto res = ml_convert_list<ml_label_list_t>( query->items( nbItems, offset ) );
-            *va_arg( args, ml_label_list_t**) = res;
+            switch ( listQuery )
+            {
+                case ML_LIST_MEDIA_LABELS:
+                    *va_arg( args, ml_label_list_t**) = ml_convert_list<ml_label_list_t>(
+                                query->items( nbItems, offset ) );
+                    break;
+                case ML_COUNT_MEDIA_LABELS:
+                    *va_arg( args, size_t* ) = query->count();
+                    break;
+                default:
+                    vlc_assert_unreachable();
+            }
+            break;
         }
     }
     return VLC_SUCCESS;

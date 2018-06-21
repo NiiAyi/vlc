@@ -63,16 +63,12 @@ typedef enum ml_file_type_t
 
 typedef struct ml_movie_t
 {
-    char* psz_title;
     char* psz_summary;
-    char* psz_artwork_mrl;
     char* psz_imdb_id;
 } ml_movie_t;
 
 typedef struct ml_show_episode_t
 {
-    char* psz_artwork_mrl;
-    char* psz_name;
     char* psz_summary;
     char* psz_tvdb_id;
     uint32_t i_episode_nb;

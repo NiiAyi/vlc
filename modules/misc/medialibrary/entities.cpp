@@ -53,18 +53,6 @@ bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output
 {
     output.i_episode_nb = input->episodeNumber();
     output.i_season_number = input->seasonNumber();
-    if ( input->name().empty() == false )
-    {
-        output.psz_name = strdup( input->name().c_str() );
-        if ( unlikely( output.psz_name == nullptr ) )
-            return false;
-    }
-    if ( input->artworkMrl().empty() == false )
-    {
-        output.psz_artwork_mrl = strdup( input->artworkMrl().c_str() );
-        if ( unlikely( output.psz_artwork_mrl == nullptr ) )
-            return false;
-    }
     if ( input->shortSummary().empty() == false )
     {
         output.psz_summary = strdup( input->shortSummary().c_str() );
@@ -82,27 +70,16 @@ bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output
 
 void Release( ml_show_episode_t& episode )
 {
-    free( episode.psz_artwork_mrl );
-    free( episode.psz_name );
     free( episode.psz_summary );
     free( episode.psz_tvdb_id );
 }
 
 bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
 {
-    output.psz_title = strdup( input->title().c_str() );
-    if ( unlikely( output.psz_title == nullptr ) )
-        return false;
     if ( input->imdbId().empty() == false )
     {
         output.psz_imdb_id = strdup( input->imdbId().c_str() );
         if ( unlikely( output.psz_imdb_id == nullptr ) )
-            return false;
-    }
-    if ( input->artworkMrl().empty() == false )
-    {
-        output.psz_artwork_mrl = strdup( input->artworkMrl().c_str() );
-        if ( unlikely( output.psz_artwork_mrl == nullptr ) )
             return false;
     }
     if ( input->shortSummary().empty() == false )
@@ -116,9 +93,7 @@ bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
 
 void Release( ml_movie_t& movie )
 {
-    free( movie.psz_title );
     free( movie.psz_summary );
-    free( movie.psz_artwork_mrl );
     free( movie.psz_imdb_id );
 }
 

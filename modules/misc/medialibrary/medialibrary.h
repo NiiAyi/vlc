@@ -25,6 +25,7 @@
 #include <medialibrary/parser/IParserService.h>
 #include <medialibrary/parser/IItem.h>
 #include <medialibrary/parser/Parser.h>
+#include <medialibrary/IMedia.h>
 
 #include <vlc_common.h>
 #include <vlc_threads.h>
@@ -126,6 +127,11 @@ public:
     int Control( int query, va_list args );
     int List( int query, const ml_query_params_t* params, va_list args );
     void* Get( int query, int64_t id );
+
+private:
+    static medialibrary::IMedia::MetadataType metadataType( int meta );
+    int getMeta( int64_t mediaId, int meta, char** result );
+    int setMeta(int64_t mediaId, int meta, const char* value );
 
 private:
     std::unique_ptr<Logger> m_logger;

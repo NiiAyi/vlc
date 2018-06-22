@@ -33,6 +33,7 @@
 #include <medialibrary/IAlbum.h>
 #include <medialibrary/IArtist.h>
 #include <medialibrary/IGenre.h>
+#include <medialibrary/IMetadata.h>
 
 class Logger : public medialibrary::ILogger
 {
@@ -273,6 +274,20 @@ int MediaLibrary::Control( int query, va_list args )
             if ( m->increasePlayCount() == false )
                 return VLC_EGENERIC;
             break;
+        }
+        case ML_MEDIA_GET_MEDIA_PLAYBACK_PREF:
+        {
+            auto mediaId = va_arg( args, int64_t );
+            auto meta = va_arg( args, int );
+            auto res = va_arg( args, char** );
+            return getMeta( mediaId, meta, res );
+        }
+        case ML_MEDIA_SET_MEDIA_PLAYBACK_PREF:
+        {
+            auto mediaId = va_arg( args, int64_t );
+            auto meta = va_arg( args, int );
+            auto value = va_arg( args, const char* );
+            return setMeta( mediaId, meta, value );
         }
         default:
             return VLC_EGENERIC;
@@ -600,6 +615,85 @@ void* MediaLibrary::Get( int query, int64_t id )
 
     }
     return nullptr;
+}
+
+medialibrary::IMedia::MetadataType MediaLibrary::metadataType( int meta )
+{
+    switch ( meta )
+    {
+        case ML_PLAYBACK_PREF_RATING:
+            return medialibrary::IMedia::MetadataType::Rating;
+        case ML_PLAYBACK_PREF_PROGRESS:
+            return medialibrary::IMedia::MetadataType::Progress;
+        case ML_PLAYBACK_PREF_SPEED:
+            return medialibrary::IMedia::MetadataType::Speed;
+        case ML_PLAYBACK_PREF_TITLE:
+            return medialibrary::IMedia::MetadataType::Title;
+        case ML_PLAYBACK_PREF_CHAPTER:
+            return medialibrary::IMedia::MetadataType::Chapter;
+        case ML_PLAYBACK_PREF_PROGRAM:
+            return medialibrary::IMedia::MetadataType::Program;
+        case ML_PLAYBACK_PREF_SEEN:
+            return medialibrary::IMedia::MetadataType::Seen;
+        case ML_PLAYBACK_PREF_VIDEO_TRACK:
+            return medialibrary::IMedia::MetadataType::VideoTrack;
+        case ML_PLAYBACK_PREF_ASPECT_RATIO:
+            return medialibrary::IMedia::MetadataType::AspectRatio;
+        case ML_PLAYBACK_PREF_ZOOM:
+            return medialibrary::IMedia::MetadataType::Zoom;
+        case ML_PLAYBACK_PREF_CROP:
+            return medialibrary::IMedia::MetadataType::Crop;
+        case ML_PLAYBACK_PREF_DEINTERLACE:
+            return medialibrary::IMedia::MetadataType::Deinterlace;
+        case ML_PLAYBACK_PREF_VIDEO_FILTER:
+            return medialibrary::IMedia::MetadataType::VideoFilter;
+        case ML_PLAYBACK_PREF_AUDIO_TRACK:
+            return medialibrary::IMedia::MetadataType::AudioTrack;
+        case ML_PLAYBACK_PREF_GAIN:
+            return medialibrary::IMedia::MetadataType::Gain;
+        case ML_PLAYBACK_PREF_AUDIO_DELAY:
+            return medialibrary::IMedia::MetadataType::AudioDelay;
+        case ML_PLAYBACK_PREF_SUBTITLE_TRACK:
+            return medialibrary::IMedia::MetadataType::SubtitleTrack;
+        case ML_PLAYBACK_PREF_SUBTITLE_DELAY:
+            return medialibrary::IMedia::MetadataType::SubtitleDelay;
+        case ML_PLAYBACK_PREF_APP_SPECIFIC:
+            return medialibrary::IMedia::MetadataType::ApplicationSpecific;
+        default:
+            vlc_assert_unreachable();
+    }
+}
+
+int MediaLibrary::getMeta( int64_t mediaId, int meta, char** result )
+{
+    auto media = m_ml->media( mediaId );
+    if ( media == nullptr )
+        return VLC_EGENERIC;
+    auto& md = media->metadata( metadataType( meta ) );
+    if ( md.isSet() == false )
+    {
+        *result = nullptr;
+        return VLC_SUCCESS;
+    }
+    *result = strdup( md.str().c_str() );
+    if ( *result == nullptr )
+        return VLC_ENOMEM;
+    return VLC_SUCCESS;
+}
+
+int MediaLibrary::setMeta( int64_t mediaId, int meta, const char* value )
+{
+    auto media = m_ml->media( mediaId );
+    if ( media == nullptr )
+        return VLC_EGENERIC;
+    bool res;
+    if ( value == nullptr )
+        res = media->unsetMetadata( metadataType( meta ) );
+    else
+        res = media->setMetadata( metadataType( meta ), value );
+    if ( res == false )
+        return VLC_EGENERIC;
+    return VLC_SUCCESS;
 }
 
 static void* Get( vlc_medialibrary_t* module, int query, int64_t id )

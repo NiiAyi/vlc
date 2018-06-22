@@ -160,34 +160,25 @@ public:
     virtual void onMediaThumbnailReady(medialibrary::MediaPtr media, bool success) override;
 };
 
-void Release( ml_media_t& media );
 bool Convert( const medialibrary::IMedia* input, ml_media_t& output );
 
-void Release( ml_file_t& file );
 bool Convert( const medialibrary::IFile* input, ml_file_t& output );
 
 bool Convert( const medialibrary::IMovie* input, ml_movie_t& output );
-void Release( ml_movie_t& movie );
 
 bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output );
-void Release( ml_show_episode_t& episode );
 
-void Release( ml_album_track_t& track );
 bool Convert( const medialibrary::IAlbumTrack* input, ml_album_track_t& output );
 
-void Release( ml_album_t& album );
 bool Convert( const medialibrary::IAlbum* input, ml_album_t& output );
 
-void Release( ml_artist_t& artist );
 bool Convert( const medialibrary::IArtist* input, ml_artist_t& output );
 
 void Release( ml_genre_t& genre );
 bool Convert( const medialibrary::IGenre* input, ml_genre_t& output );
 
-void Release( ml_show_t& show );
 bool Convert( const medialibrary::IShow* input, ml_show_t& output );
 
-void Release( ml_label_t& label );
 bool Convert( const medialibrary::ILabel* input, ml_label_t& output );
 
 /**
@@ -202,25 +193,19 @@ void Release( T* entity )
     free( entity );
 }
 
-/**
- * Release the internals of a stack allocated instance of T
- */
-template <typename T>
-void ReleaseRef( T* entity )
-{
-    assert( entity != nullptr );
-    Release( *entity );
-}
-
-template <typename T>
-void ReleaseList( T* list )
-{
-    if ( list == nullptr )
-        return;
-    for ( auto i = 0u; i < list->i_nb_items; ++i )
-        Release( list->p_items[i] );
-    free( list );
-}
+// Dispatcher to libvlccore's ml release functions
+static inline void Release( ml_show_t* show ) { vlc_ml_show_release( show ); }
+static inline void Release( ml_artist_t* artist ) { vlc_ml_artist_release( artist ); }
+static inline void Release( ml_album_t* album ) { vlc_ml_album_release( album ); }
+static inline void Release( ml_genre_t* genre ) { vlc_ml_genre_release( genre ); }
+static inline void Release( ml_media_t* media ) { vlc_ml_media_release( media ); }
+static inline void Release( ml_label_list_t* list ) { vlc_ml_label_list_release( list ); }
+static inline void Release( ml_file_list_t* list ) { vlc_ml_file_list_release( list ); }
+static inline void Release( ml_artist_list_t* list ) { vlc_ml_artist_list_release( list ); }
+static inline void Release( ml_media_list_t* list ) { vlc_ml_media_list_release( list ); }
+static inline void Release( ml_album_list_t* list ) { vlc_ml_album_list_release( list ); }
+static inline void Release( ml_show_list_t* list ) { vlc_ml_show_list_release( list ); }
+static inline void Release( ml_genre_list_t* list ) { vlc_ml_genre_list_release( list ); }
 
 template <typename To, typename From>
 To* ml_convert_list( const std::vector<std::shared_ptr<From>>& input )
@@ -234,7 +219,7 @@ To* ml_convert_list( const std::vector<std::shared_ptr<From>>& input )
     // Allocate the ml_*_list_t
     auto list = wrapCPtr<To>(
         reinterpret_cast<To*>( malloc( sizeof( To ) ) ),
-        &ReleaseList<To> );
+        static_cast<void(*)(To*)>( &Release ) );
     if ( unlikely( list == nullptr ) )
         return nullptr;
     using ItemType = typename std::remove_pointer<decltype(To::p_items)>::type;
@@ -268,7 +253,6 @@ T* CreateAndConvert( const Input* input )
     // as it converts in place, and doesn't have to free the allocated pointer.
     // When CreateAndConvert is used, we heap-allocate an instance of T, and therefor
     // we also need to release it.
-    res->pf_release = static_cast<void(*)( T* )>( Release );
     return res.release();
 }
 

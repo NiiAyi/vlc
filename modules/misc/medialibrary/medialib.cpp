@@ -539,6 +539,7 @@ int MediaLibrary::List( int listQuery, const ml_query_params_t* params, va_list 
                 default:
                     vlc_assert_unreachable();
             }
+            break;
         }
         case ML_LIST_MEDIA_LABELS:
         case ML_COUNT_MEDIA_LABELS:

@@ -35,10 +35,6 @@
 #include <medialibrary/IGenre.h>
 #include <medialibrary/ILabel.h>
 
-void Release( ml_album_track_t& )
-{
-}
-
 bool Convert( const medialibrary::IAlbumTrack* input, ml_album_track_t& output )
 {
     output.i_artist_id = input->artistId();
@@ -68,12 +64,6 @@ bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output
     return true;
 }
 
-void Release( ml_show_episode_t& episode )
-{
-    free( episode.psz_summary );
-    free( episode.psz_tvdb_id );
-}
-
 bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
 {
     if ( input->imdbId().empty() == false )
@@ -91,36 +81,8 @@ bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
     return true;
 }
 
-void Release( ml_movie_t& movie )
-{
-    free( movie.psz_summary );
-    free( movie.psz_imdb_id );
-}
-
-void Release( ml_media_t& media )
-{
-    ReleaseList( media.p_files );
-    free( media.psz_title );
-    free( media.psz_artwork_mrl );
-    switch( media.i_subtype )
-    {
-        case ML_MEDIA_SUBTYPE_ALBUMTRACK:
-            Release( media.album_track );
-            break;
-        case ML_MEDIA_SUBTYPE_SHOW_EPISODE:
-            Release( media.show_episode );
-            break;
-        case ML_MEDIA_SUBTYPE_MOVIE:
-            Release( media.movie );
-            break;
-        default:
-            vlc_assert_unreachable();
-    }
-}
-
 bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_media_t*)>( &ReleaseRef );
     output.i_id = input->id();
 
     switch ( input->type() )
@@ -136,6 +98,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
                         return false;
                     if ( Convert( albumTrack.get(), output.album_track ) == false )
                         return false;
+                    break;
                 }
                 default:
                     vlc_assert_unreachable();
@@ -200,14 +163,8 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
     return true;
 }
 
-void Release( ml_file_t& file )
-{
-    free( file.psz_mrl );
-}
-
 bool Convert( const medialibrary::IFile* input, ml_file_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_file_t*)>( &ReleaseRef );
     switch ( input->type() )
     {
         case medialibrary::IFile::Type::Main:
@@ -235,18 +192,8 @@ bool Convert( const medialibrary::IFile* input, ml_file_t& output )
     return true;
 }
 
-void Release( ml_album_t& album )
-{
-    free( album.psz_artist );
-    free( album.psz_artwork_mrl );
-    free( album.psz_summary );
-    free( album.psz_title );
-    ReleaseList( album.p_featuring );
-}
-
 bool Convert( const medialibrary::IAlbum* input, ml_album_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_album_t*)>( &ReleaseRef );
     output.i_id = input->id();
     auto featuring = input->artists( false )->all();
     output.p_featuring = ml_convert_list<ml_artist_list_t>( featuring );
@@ -293,17 +240,8 @@ bool Convert( const medialibrary::IAlbum* input, ml_album_t& output )
     return true;
 }
 
-void Release( ml_artist_t& artist  )
-{
-    free( artist.psz_artwork_mrl );
-    free( artist.psz_name );
-    free( artist.psz_shortbio );
-    free( artist.psz_mb_id );
-}
-
 bool Convert( const medialibrary::IArtist* input, ml_artist_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_artist_t*)>( &ReleaseRef );
     output.i_id = input->id();
     output.i_nb_album = input->nbAlbums();
     output.i_nb_tracks = input->nbTracks();
@@ -349,7 +287,6 @@ void Release( ml_genre_t& genre )
 
 bool Convert( const medialibrary::IGenre* input, ml_genre_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_genre_t*)>( &ReleaseRef );
     output.i_id = input->id();
     output.i_nb_tracks = input->nbTracks();
     assert( input->name().empty() == false );
@@ -359,17 +296,8 @@ bool Convert( const medialibrary::IGenre* input, ml_genre_t& output )
     return true;
 }
 
-void Release( ml_show_t& show )
-{
-    free( show.psz_artwork_mrl );
-    free( show.psz_name );
-    free( show.psz_summary );
-    free( show.psz_tvdb_id );
-}
-
 bool Convert( const medialibrary::IShow* input, ml_show_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_show_t*)>( &ReleaseRef );
     output.i_id = input->id();
     output.i_release_year = input->releaseDate();
     output.i_nb_episodes = input->nbEpisodes();
@@ -401,14 +329,8 @@ bool Convert( const medialibrary::IShow* input, ml_show_t& output )
     return true;
 }
 
-void Release( ml_label_t& label )
-{
-    free( label.psz_name );
-}
-
 bool Convert( const medialibrary::ILabel* input, ml_label_t& output )
 {
-    output.pf_release = static_cast<void(*)(ml_label_t*)>( &ReleaseRef );
     assert( input->name().empty() == false );
     output.psz_name = strdup( input->name().c_str() );
     if ( unlikely( output.psz_name == nullptr ) )

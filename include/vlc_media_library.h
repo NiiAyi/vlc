@@ -213,6 +213,36 @@ typedef struct ml_genre_list_t {
     ml_genre_t* p_items;
 } ml_genre_list_t;
 
+
+typedef struct ml_entrypoint_t ml_entrypoint_t;
+struct ml_entrypoint_t
+{
+    char* psz_mrl; /**< This entrypoint's MRL. Will be NULL if b_present is false */
+    bool b_present; /**< The presence state for this entrypoint. */
+    bool b_banned; /**< Will be true if the user required this entrypoint to be excluded */
+};
+
+typedef struct vlc_medialibrary_t vlc_medialibrary_t;
+
+VLC_API vlc_medialibrary_t* vlc_ml_create( vlc_object_t* p_obj );
+#define vlc_ml_create(x) vlc_ml_create( VLC_OBJECT( x ) )
+VLC_API void vlc_ml_release( vlc_medialibrary_t* p_ml );
+VLC_API void vlc_ml_entrypoints_release( ml_entrypoint_t* p_list, size_t i_nb_items );
+
+VLC_API void vlc_ml_show_release( ml_show_t* p_show );
+VLC_API void vlc_ml_artist_release( ml_artist_t* p_artist );
+VLC_API void vlc_ml_genre_release( ml_genre_t* p_genre );
+VLC_API void vlc_ml_media_release( ml_media_t* p_media );
+VLC_API void vlc_ml_album_release( ml_album_t* p_album );
+
+VLC_API void vlc_ml_label_list_release( ml_label_list_t* p_list );
+VLC_API void vlc_ml_file_list_release( ml_file_list_t* p_list );
+VLC_API void vlc_ml_artist_list_release( ml_artist_list_t* p_list );
+VLC_API void vlc_ml_media_list_release( ml_media_list_t* p_list );
+VLC_API void vlc_ml_album_list_release( ml_album_list_t* p_list );
+VLC_API void vlc_ml_show_list_release( ml_show_list_t* p_list );
+VLC_API void vlc_ml_genre_list_release( ml_genre_list_t* p_list );
+
 typedef enum ml_sorting_criteria_t
 {
     /*
@@ -244,7 +274,6 @@ struct ml_query_params_t
     bool b_desc;
 };
 
-typedef struct vlc_medialibrary_t vlc_medialibrary_t;
 struct vlc_medialibrary_t
 {
     struct vlc_common_members obj;
@@ -278,14 +307,6 @@ struct vlc_medialibrary_t
      * Refer to the list of queries for the specific return type
      */
     void* (*pf_get)( vlc_medialibrary_t* p_ml, int i_query, int64_t i_id );
-};
-
-typedef struct ml_entrypoint_t ml_entrypoint_t;
-struct ml_entrypoint_t
-{
-    char* psz_mrl; /**< This entrypoint's MRL. Will be NULL if b_present is false */
-    bool b_present; /**< The presence state for this entrypoint. */
-    bool b_banned; /**< Will be true if the user required this entrypoint to be excluded */
 };
 
 enum ml_control
@@ -618,25 +639,6 @@ static inline size_t ml_count_media_labels( vlc_medialibrary_t* p_ml, ml_query_p
         return 0;
     return count;
 }
-
-VLC_API vlc_medialibrary_t* vlc_ml_create( vlc_object_t* p_obj );
-#define vlc_ml_create(x) vlc_ml_create( VLC_OBJECT( x ) )
-VLC_API void vlc_ml_release( vlc_medialibrary_t* p_ml );
-VLC_API void vlc_ml_entrypoints_release( ml_entrypoint_t* p_list, size_t i_nb_items );
-
-VLC_API void vlc_ml_show_release( ml_show_t* p_show );
-VLC_API void vlc_ml_artist_release( ml_artist_t* p_artist );
-VLC_API void vlc_ml_genre_release( ml_genre_t* p_genre );
-VLC_API void vlc_ml_media_release( ml_media_t* p_media );
-VLC_API void vlc_ml_album_release( ml_album_t* p_album );
-
-VLC_API void vlc_ml_label_list_release( ml_label_list_t* p_list );
-VLC_API void vlc_ml_file_list_release( ml_file_list_t* p_list );
-VLC_API void vlc_ml_artist_list_release( ml_artist_list_t* p_list );
-VLC_API void vlc_ml_media_list_release( ml_media_list_t* p_list );
-VLC_API void vlc_ml_album_list_release( ml_album_list_t* p_list );
-VLC_API void vlc_ml_show_list_release( ml_show_list_t* p_list );
-VLC_API void vlc_ml_genre_list_release( ml_genre_list_t* p_list );
 
 /*****************************************************************************
  * ML Enums

@@ -77,8 +77,6 @@ typedef struct ml_show_episode_t
 
 typedef struct ml_show_t
 {
-    void (*pf_release)( struct ml_show_t* );
-
     int64_t i_id;
     char* psz_name;
     char* psz_summary;
@@ -101,23 +99,18 @@ typedef struct ml_album_track_t
 
 typedef struct ml_label_t
 {
-    void (*pf_release)( struct ml_label_t* );
     int64_t i_id;
     char* psz_name;
 } ml_label_t;
 
 typedef struct ml_label_list_t
 {
-    void (*pf_release)( struct ml_label_list_t* );
-
     size_t i_nb_items;
     ml_label_t* p_items;
 } ml_label_list_t;
 
 typedef struct ml_file_t
 {
-    void (*pf_release)( struct ml_file_t* );
-
     char* psz_mrl;
     ml_file_type_t i_type;
     bool b_external;
@@ -125,16 +118,12 @@ typedef struct ml_file_t
 
 typedef struct ml_file_list_t
 {
-    void (*pf_release)( struct ml_file_list_t* );
-
     size_t i_nb_items;
     ml_file_t* p_items;
 } ml_file_list_t;
 
 typedef struct ml_media_t
 {
-    void (*pf_release)( struct ml_media_t* );
-
     int64_t i_id;
 
     ml_media_type_t i_type;
@@ -161,8 +150,6 @@ typedef struct ml_media_t
 
 
 typedef struct ml_artist_t {
-    void (*pf_release)( struct ml_artist_t* );
-
     int64_t i_id;
     char* psz_name;
     char* psz_shortbio;
@@ -175,15 +162,11 @@ typedef struct ml_artist_t {
 
 typedef struct ml_artist_list_t
 {
-    void (*pf_release)( struct ml_artist_list_t* );
-
     size_t i_nb_items;
     ml_artist_t* p_items;
 } ml_artist_list_t;
 
 typedef struct ml_album_t {
-    void (*pf_release)( struct ml_album_t* );
-
     int64_t i_id;
     char* psz_title;
     char* psz_summary;
@@ -200,8 +183,6 @@ typedef struct ml_album_t {
 
 typedef struct ml_genre_t
 {
-    void (*pf_release)( struct ml_genre_t* );
-
     int64_t i_id;
     char* psz_name;
     size_t i_nb_tracks;
@@ -209,24 +190,18 @@ typedef struct ml_genre_t
 
 typedef struct ml_media_list_t
 {
-    void (*pf_release)( struct ml_media_list_t* );
-
     size_t i_nb_items;
     ml_media_t* p_items;
 } ml_media_list_t;
 
 typedef struct ml_album_list_t
 {
-    void (*pf_release)( struct ml_album_list_t* );
-
     size_t i_nb_items;
     ml_album_t* p_items;
 } ml_album_list_t;
 
 typedef struct ml_show_list_t
 {
-    void (*pf_release)( struct ml_show_list_t* );
-
     size_t i_nb_items;
     ml_show_t* p_items;
 } ml_show_list_t;
@@ -644,12 +619,24 @@ static inline size_t ml_count_media_labels( vlc_medialibrary_t* p_ml, ml_query_p
     return count;
 }
 
-#define vlc_ml_object_release( obj ) (obj)->pf_release( ( obj ) )
-
 VLC_API vlc_medialibrary_t* vlc_ml_create( vlc_object_t* p_obj );
 #define vlc_ml_create(x) vlc_ml_create( VLC_OBJECT( x ) )
 VLC_API void vlc_ml_release( vlc_medialibrary_t* p_ml );
 VLC_API void vlc_ml_entrypoints_release( ml_entrypoint_t* p_list, size_t i_nb_items );
+
+VLC_API void vlc_ml_show_release( ml_show_t* p_show );
+VLC_API void vlc_ml_artist_release( ml_artist_t* p_artist );
+VLC_API void vlc_ml_genre_release( ml_genre_t* p_genre );
+VLC_API void vlc_ml_media_release( ml_media_t* p_media );
+VLC_API void vlc_ml_album_release( ml_album_t* p_album );
+
+VLC_API void vlc_ml_label_list_release( ml_label_list_t* p_list );
+VLC_API void vlc_ml_file_list_release( ml_file_list_t* p_list );
+VLC_API void vlc_ml_artist_list_release( ml_artist_list_t* p_list );
+VLC_API void vlc_ml_media_list_release( ml_media_list_t* p_list );
+VLC_API void vlc_ml_album_list_release( ml_album_list_t* p_list );
+VLC_API void vlc_ml_show_list_release( ml_show_list_t* p_list );
+VLC_API void vlc_ml_genre_list_release( ml_genre_list_t* p_list );
 
 /*****************************************************************************
  * ML Enums

@@ -327,8 +327,42 @@ enum ml_control
 
     /* Media management */
     ML_MEDIA_INCREASE_PLAY_COUNT,       /**< arg1: media id; can fail */
+    ML_MEDIA_GET_MEDIA_PLAYBACK_PREF,   /**< arg1: media id; arg2 ml_playback_pref; arg3: char**; */
+    ML_MEDIA_SET_MEDIA_PLAYBACK_PREF,   /**< arg1: media id; arg2 ml_playback_pref; arg3: const char*; */
 };
 
+/**
+ * User playback settings.
+ * All values/units are up to the caller and are not interpreted by the media
+ * library.
+ * All values are stored and returned as strings.
+ * When calling vlc_medialibrary_t::pf_control with ML_MEDIA_GET_MEDIA_PLAYBACK_PREF,
+ * the value will be returned stored in the provided char**. If the preference was
+ * not set yet, NULL will be returned.
+ * When setting a preference, NULL can be provided as a value to unset it.
+ */
+enum ml_playback_pref
+{
+    ML_PLAYBACK_PREF_RATING,
+    ML_PLAYBACK_PREF_PROGRESS,
+    ML_PLAYBACK_PREF_SPEED,
+    ML_PLAYBACK_PREF_TITLE,
+    ML_PLAYBACK_PREF_CHAPTER,
+    ML_PLAYBACK_PREF_PROGRAM,
+    ML_PLAYBACK_PREF_SEEN,
+    ML_PLAYBACK_PREF_VIDEO_TRACK,
+    ML_PLAYBACK_PREF_ASPECT_RATIO,
+    ML_PLAYBACK_PREF_ZOOM,
+    ML_PLAYBACK_PREF_CROP,
+    ML_PLAYBACK_PREF_DEINTERLACE,
+    ML_PLAYBACK_PREF_VIDEO_FILTER,
+    ML_PLAYBACK_PREF_AUDIO_TRACK,
+    ML_PLAYBACK_PREF_GAIN,
+    ML_PLAYBACK_PREF_AUDIO_DELAY,
+    ML_PLAYBACK_PREF_SUBTITLE_TRACK,
+    ML_PLAYBACK_PREF_SUBTITLE_DELAY,
+    ML_PLAYBACK_PREF_APP_SPECIFIC,
+};
 
 static inline void vlc_ml_add_folder( vlc_medialibrary_t* p_ml, const char* psz_folder )
 {
@@ -374,6 +408,16 @@ static inline void vlc_ml_clear_history( vlc_medialibrary_t* p_ml )
 static inline int vlc_ml_increase_playcount( vlc_medialibrary_t* p_ml, int64_t i_media_id )
 {
     return p_ml->pf_control( p_ml, ML_MEDIA_INCREASE_PLAY_COUNT, i_media_id );
+}
+
+static inline int vlc_ml_get_playback_pref( vlc_medialibrary_t* p_ml, int64_t i_media_id, int i_pref, char** ppsz_result )
+{
+    return p_ml->pf_control( p_ml, ML_MEDIA_GET_MEDIA_PLAYBACK_PREF, i_media_id, i_pref, ppsz_result );
+}
+
+static inline int vlc_ml_set_playback_pref( vlc_medialibrary_t* p_ml, int64_t i_media_id, int i_pref, const char* psz_value )
+{
+    return p_ml->pf_control( p_ml, ML_MEDIA_SET_MEDIA_PLAYBACK_PREF, i_media_id, i_pref, psz_value );
 }
 
 enum ml_get_queries

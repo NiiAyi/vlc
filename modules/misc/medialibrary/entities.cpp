@@ -93,6 +93,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
             {
                 case medialibrary::IMedia::SubType::AlbumTrack:
                 {
+                    output.i_subtype = ML_MEDIA_SUBTYPE_ALBUMTRACK;
                     auto albumTrack = input->albumTrack();
                     if ( albumTrack == nullptr )
                         return false;
@@ -111,6 +112,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
             {
                 case medialibrary::IMedia::SubType::Movie:
                 {
+                    output.i_subtype = ML_MEDIA_SUBTYPE_MOVIE;
                     auto movie = input->movie();
                     if ( movie == nullptr )
                         return false;
@@ -120,6 +122,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
                 }
                 case medialibrary::IMedia::SubType::ShowEpisode:
                 {
+                    output.i_subtype = ML_MEDIA_SUBTYPE_SHOW_EPISODE;
                     auto episode = input->showEpisode();
                     if ( episode == nullptr )
                         return false;
@@ -127,8 +130,10 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
                         return false;
                     break;
                 }
-                case medialibrary::IMedia::SubType::AlbumTrack:
                 case medialibrary::IMedia::SubType::Unknown:
+                    output.i_subtype = ML_MEDIA_SUBTYPE_UNKNOWN;
+                    break;
+                case medialibrary::IMedia::SubType::AlbumTrack:
                     vlc_assert_unreachable();
             }
             break;

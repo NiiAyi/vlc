@@ -94,7 +94,7 @@ static void vlc_ml_media_release_inner( ml_media_t* p_media )
             free( p_media->movie.psz_imdb_id );
             break;
         default:
-            vlc_assert_unreachable();
+            break;
     }
 }
 

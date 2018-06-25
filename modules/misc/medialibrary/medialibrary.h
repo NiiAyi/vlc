@@ -234,6 +234,7 @@ To* ml_convert_list( const std::vector<std::shared_ptr<From>>& input )
     list->p_items = reinterpret_cast<ItemType*>( malloc( input.size() * sizeof( ItemType ) ) );
     if ( unlikely( list->p_items == nullptr ) )
         return nullptr;
+    list->i_nb_items = 0;
 
     for ( auto i = 0u; i < input.size(); ++i )
     {

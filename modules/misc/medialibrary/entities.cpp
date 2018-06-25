@@ -55,12 +55,16 @@ bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output
         if ( unlikely( output.psz_summary == nullptr ) )
             return false;
     }
+    else
+        output.psz_summary = nullptr;
     if ( input->tvdbId().empty() == false )
     {
         output.psz_tvdb_id = strdup( input->tvdbId().c_str() );
         if ( unlikely( output.psz_tvdb_id == nullptr ) )
             return false;
     }
+    else
+        output.psz_tvdb_id = nullptr;
     return true;
 }
 
@@ -72,12 +76,16 @@ bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
         if ( unlikely( output.psz_imdb_id == nullptr ) )
             return false;
     }
+    else
+        output.psz_imdb_id = nullptr;
     if ( input->shortSummary().empty() == false )
     {
         output.psz_summary = strdup( input->shortSummary().c_str() );
         if ( unlikely( output.psz_summary == nullptr ) )
             return false;
     }
+    else
+        output.psz_summary = nullptr;
     return true;
 }
 
@@ -164,6 +172,8 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
         if ( unlikely( output.psz_artwork_mrl == nullptr ) )
             return false;
     }
+    else
+        output.psz_artwork_mrl = nullptr;
 
     return true;
 }
@@ -211,18 +221,24 @@ bool Convert( const medialibrary::IAlbum* input, ml_album_t& output )
         if ( unlikely( output.psz_title == nullptr ) )
             return false;
     }
+    else
+        output.psz_title = nullptr;
     if ( input->shortSummary().empty() == false )
     {
         output.psz_summary = strdup( input->shortSummary().c_str() );
         if ( unlikely( output.psz_summary == nullptr ) )
             return false;
     }
+    else
+        output.psz_summary = nullptr;
     if ( input->artworkMrl().empty() == false )
     {
         output.psz_artwork_mrl = strdup( input->artworkMrl().c_str() );
         if ( unlikely( output.psz_artwork_mrl == nullptr ) )
             return false;
     }
+    else
+        output.psz_artwork_mrl = nullptr;
     auto artist = input->albumArtist();
     if ( artist != nullptr )
     {
@@ -270,18 +286,24 @@ bool Convert( const medialibrary::IArtist* input, ml_artist_t& output )
         if ( unlikely( output.psz_shortbio == nullptr ) )
             return false;
     }
+    else
+        output.psz_shortbio = nullptr;
     if ( input->artworkMrl().empty() == false )
     {
         output.psz_artwork_mrl = strdup( input->artworkMrl().c_str() );
         if ( unlikely( output.psz_artwork_mrl == nullptr ) )
             return false;
     }
+    else
+        output.psz_artwork_mrl = nullptr;
     if ( input->musicBrainzId().empty() == false )
     {
         output.psz_mb_id = strdup( input->musicBrainzId().c_str() );
         if ( unlikely( output.psz_mb_id == nullptr ) )
             return false;
     }
+    else
+        output.psz_mb_id = nullptr;
     return true;
 }
 
@@ -313,24 +335,32 @@ bool Convert( const medialibrary::IShow* input, ml_show_t& output )
         if ( output.psz_name == nullptr )
             return false;
     }
+    else
+        output.psz_name = nullptr;
     if ( input->artworkMrl().empty() == false )
     {
         output.psz_artwork_mrl = strdup( input->artworkMrl().c_str() );
         if ( unlikely( output.psz_artwork_mrl == nullptr ) )
             return false;
     }
+    else
+        output.psz_artwork_mrl = nullptr;
     if ( input->tvdbId().empty() == false )
     {
         output.psz_tvdb_id = strdup( input->tvdbId().c_str() );
         if ( unlikely( output.psz_tvdb_id == nullptr ) )
             return false;
     }
+    else
+        output.psz_tvdb_id = nullptr;
     if ( input->shortSummary().empty() == false )
     {
         output.psz_summary = strdup( input->shortSummary().c_str() );
         if ( unlikely( output.psz_summary == nullptr ) )
             return false;
     }
+    else
+        output.psz_summary = nullptr;
     return true;
 }
 

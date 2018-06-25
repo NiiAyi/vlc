@@ -35,6 +35,8 @@
 #include <medialibrary/IGenre.h>
 #include <medialibrary/IMetadata.h>
 
+#include <sstream>
+
 class Logger : public medialibrary::ILogger
 {
 public:
@@ -193,7 +195,37 @@ MediaLibrary::MediaLibrary( vlc_object_t* obj )
     auto res = m_ml->start();
     if ( res == false )
         throw std::runtime_error( "Failed to start medialibrary" );
-    m_ml->discover( "file:///home/chouquette/dev/medialibrary/test/samples/samples/playlist/same_folder/" );
+    auto folders = wrapCPtr( var_InheritString( obj, "ml-folders" ) );
+    if ( folders != nullptr && strlen( folders.get() ) > 0 )
+    {
+        std::stringstream ss( folders.get() );
+        std::string folder;
+        while ( std::getline( ss, folder, ';' ) )
+            m_ml->discover( folder );
+    }
+    else
+    {
+        auto videoFolder = wrapCPtr( config_GetUserDir( VLC_VIDEOS_DIR ) );
+        std::string varValue;
+        if ( videoFolder != nullptr )
+        {
+            auto mrl = std::string{ "file://" } + videoFolder.get();
+            m_ml->discover( mrl );
+            varValue = mrl;
+        }
+        auto musicFolder = wrapCPtr( config_GetUserDir( VLC_MUSIC_DIR ) );
+        if ( musicFolder != nullptr )
+        {
+            auto mrl = std::string{ "file://" } + musicFolder.get();
+            m_ml->discover( mrl );
+            if ( varValue.empty() == false )
+                varValue += ";";
+            varValue += mrl;
+        }
+        if ( varValue.empty() == false )
+            config_PutPsz( "ml-folders", varValue.c_str() );
+    }
+
     m_ml->reload();
 }
 
@@ -748,6 +780,10 @@ static void Close( vlc_medialibrary_t* module )
     delete p_ml;
 }
 
+#define ML_FOLDER_TEXT _( "Folders discovered by the media library" )
+#define ML_FOLDER_LONGTEXT _( "Semicolon separated list of folders to discover " \
+                              "media from" )
+
 vlc_module_begin()
     set_shortname(N_("media library"))
     set_description(N_( "Organize your media" ))
@@ -755,4 +791,5 @@ vlc_module_begin()
     set_subcategory(SUBCAT_ADVANCED_MISC)
     set_capability("medialibrary", 100)
     set_callbacks(Open, Close)
+    add_string( "ml-folders", nullptr, ML_FOLDER_TEXT, ML_FOLDER_LONGTEXT, false )
 vlc_module_end()

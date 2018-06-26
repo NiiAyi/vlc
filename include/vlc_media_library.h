@@ -207,8 +207,6 @@ typedef struct ml_show_list_t
 } ml_show_list_t;
 
 typedef struct ml_genre_list_t {
-    void (*pf_release)( struct ml_genre_list_t* );
-
     size_t i_nb_items;
     ml_genre_t* p_items;
 } ml_genre_list_t;

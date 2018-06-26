@@ -132,6 +132,7 @@ private:
     static medialibrary::IMedia::MetadataType metadataType( int meta );
     int getMeta( int64_t mediaId, int meta, char** result );
     int setMeta(int64_t mediaId, int meta, const char* value );
+    int filterListChildrenQuery( int query, int parentType );
 
 private:
     std::unique_ptr<Logger> m_logger;

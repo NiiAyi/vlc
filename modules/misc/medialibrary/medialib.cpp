@@ -377,6 +377,21 @@ int MediaLibrary::List( int listQuery, const vlc_ml_query_params_t* params, va_l
         offset = params->i_offset;
         paramsPtr = &p;
     }
+    switch ( listQuery )
+    {
+        case VLC_ML_LIST_MEDIA_OF:
+        case VLC_ML_COUNT_MEDIA_OF:
+        case VLC_ML_LIST_ARTISTS_OF:
+        case VLC_ML_COUNT_ARTISTS_OF:
+        case VLC_ML_LIST_ALBUMS_OF:
+        case VLC_ML_COUNT_ALBUMS_OF:
+        {
+            auto parentType = va_arg( args, int );
+            listQuery = filterListChildrenQuery( listQuery, parentType );
+        }
+        default:
+            break;
+    }
     switch( listQuery )
     {
         case VLC_ML_LIST_ALBUM_TRACKS:
@@ -784,6 +799,83 @@ int MediaLibrary::setMeta( int64_t mediaId, int meta, const char* value )
     if ( res == false )
         return VLC_EGENERIC;
     return VLC_SUCCESS;
+}
+
+int MediaLibrary::filterListChildrenQuery( int query, int parentType )
+{
+    switch( query )
+    {
+        case VLC_ML_LIST_MEDIA_OF:
+            switch ( parentType )
+            {
+                case VLC_ML_PARENT_ALBUM:
+                    return VLC_ML_LIST_ALBUM_TRACKS;
+                case VLC_ML_PARENT_ARTIST:
+                    return VLC_ML_LIST_ALBUM_TRACKS;
+                case VLC_ML_PARENT_SHOW:
+                    return VLC_ML_LIST_SHOW_EPISODES;
+                case VLC_ML_PARENT_GENRE:
+                    return VLC_ML_LIST_GENRE_TRACKS;
+                default:
+                    vlc_assert_unreachable();
+            }
+        case VLC_ML_COUNT_MEDIA_OF:
+            switch ( parentType )
+            {
+                case VLC_ML_PARENT_ALBUM:
+                    return VLC_ML_COUNT_ALBUM_TRACKS;
+                case VLC_ML_PARENT_ARTIST:
+                    return VLC_ML_COUNT_ALBUM_TRACKS;
+                case VLC_ML_PARENT_SHOW:
+                    return VLC_ML_COUNT_SHOW_EPISODES;
+                case VLC_ML_PARENT_GENRE:
+                    return VLC_ML_COUNT_GENRE_TRACKS;
+                default:
+                    vlc_assert_unreachable();
+            }
+        case VLC_ML_LIST_ALBUMS_OF:
+            switch ( parentType )
+            {
+                case VLC_ML_PARENT_ARTIST:
+                    return VLC_ML_LIST_ARTIST_ALBUMS;
+                case VLC_ML_PARENT_GENRE:
+                    return VLC_ML_LIST_GENRE_ALBUMS;
+                default:
+                    vlc_assert_unreachable();
+            }
+        case VLC_ML_COUNT_ALBUMS_OF:
+            switch ( parentType )
+            {
+                case VLC_ML_PARENT_ARTIST:
+                    return VLC_ML_COUNT_ARTIST_ALBUMS;
+                case VLC_ML_PARENT_GENRE:
+                    return VLC_ML_COUNT_GENRE_ALBUMS;
+                default:
+                    vlc_assert_unreachable();
+            }
+        case VLC_ML_LIST_ARTISTS_OF:
+            switch ( parentType )
+            {
+                case VLC_ML_PARENT_ALBUM:
+                    return VLC_ML_LIST_ALBUM_ARTISTS;
+                case VLC_ML_PARENT_ARTIST:
+                    return VLC_ML_LIST_GENRE_ARTISTS;
+                default:
+                    vlc_assert_unreachable();
+            }
+        case VLC_ML_COUNT_ARTISTS_OF:
+            switch ( parentType )
+            {
+                case VLC_ML_PARENT_ALBUM:
+                    return VLC_ML_COUNT_ALBUM_ARTISTS;
+                case VLC_ML_PARENT_ARTIST:
+                    return VLC_ML_COUNT_GENRE_ARTISTS;
+                default:
+                    vlc_assert_unreachable();
+            }
+        default:
+            vlc_assert_unreachable();
+    }
 }
 
 static void* Get( vlc_medialibrary_t* module, int query, int64_t id )

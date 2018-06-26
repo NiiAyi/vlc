@@ -155,6 +155,7 @@ void vlc_ml_label_list_release( ml_label_list_t* p_list )
         return;
     for ( size_t i = 0; i < p_list->i_nb_items; ++i )
         free( p_list->p_items[i].psz_name );
+    free( p_list->p_items );
     free( p_list );
 }
 
@@ -164,6 +165,7 @@ void vlc_ml_file_list_release( ml_file_list_t* p_list )
         return;
     for ( size_t i = 0; i < p_list->i_nb_items; ++i )
         free( p_list->p_items[i].psz_mrl );
+    free( p_list->p_items );
     free( p_list );
 }
 
@@ -173,6 +175,7 @@ void vlc_ml_artist_list_release( ml_artist_list_t* p_list )
         return;
     for ( size_t i = 0; i < p_list->i_nb_items; ++i )
         vlc_ml_artist_release_inner( &p_list->p_items[i] );
+    free( p_list->p_items );
     free( p_list );
 }
 
@@ -183,6 +186,7 @@ void vlc_ml_media_list_release( ml_media_list_t* p_list )
         return;
     for ( size_t i = 0; i < p_list->i_nb_items; ++i )
         vlc_ml_media_release_inner( &p_list->p_items[i] );
+    free( p_list->p_items );
     free( p_list );
 }
 
@@ -192,6 +196,7 @@ void vlc_ml_album_list_release( ml_album_list_t* p_list )
         return;
     for ( size_t i = 0; i < p_list->i_nb_items; ++i )
         vlc_ml_album_release_inner( &p_list->p_items[i] );
+    free( p_list->p_items );
     free( p_list );
 }
 
@@ -201,6 +206,7 @@ void vlc_ml_show_list_release( ml_show_list_t* p_list )
         return;
     for ( size_t i = 0; i < p_list->i_nb_items; ++i )
         vlc_ml_show_release_inner( &p_list->p_items[i] );
+    free( p_list->p_items );
     free( p_list );
 }
 
@@ -210,5 +216,6 @@ void vlc_ml_genre_list_release( ml_genre_list_t* p_list )
         return;
     for ( size_t i = 0; i < p_list->i_nb_items; ++i )
         free( p_list->p_items[i].psz_name );
+    free( p_list->p_items );
     free( p_list );
 }

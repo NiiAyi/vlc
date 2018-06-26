@@ -400,6 +400,27 @@ int MediaLibrary::List( int listQuery, const vlc_ml_query_params_t* params, va_l
             }
             break;
         }
+        case VLC_ML_LIST_ALBUM_ARTISTS:
+        case VLC_ML_COUNT_ALBUM_ARTISTS:
+        {
+            auto album = m_ml->album( va_arg( args, int64_t ) );
+            if ( album == nullptr )
+                return VLC_EGENERIC;
+            auto query = album->artists( paramsPtr );
+            switch ( listQuery )
+            {
+                case VLC_ML_LIST_ALBUM_ARTISTS:
+                    *va_arg( args, vlc_ml_artist_list_t**) = ml_convert_list<vlc_ml_artist_list_t>(
+                                query->items( nbItems, offset ) );
+                    break;
+                case VLC_ML_COUNT_ALBUM_ARTISTS:
+                    *va_arg( args, size_t* ) = query->count();
+                    break;
+                default:
+                    vlc_assert_unreachable();
+            }
+            break;
+        }
         case VLC_ML_LIST_ARTIST_ALBUMS:
         case VLC_ML_COUNT_ARTIST_ALBUMS:
         case VLC_ML_LIST_ARTIST_TRACKS:

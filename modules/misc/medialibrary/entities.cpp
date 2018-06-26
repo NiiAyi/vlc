@@ -210,8 +210,6 @@ bool Convert( const medialibrary::IFile* input, vlc_ml_file_t& output )
 bool Convert( const medialibrary::IAlbum* input, vlc_ml_album_t& output )
 {
     output.i_id = input->id();
-    auto featuring = input->artists( false )->all();
-    output.p_featuring = ml_convert_list<vlc_ml_artist_list_t>( featuring );
     output.i_nb_tracks = input->nbTracks();
     output.i_duration = input->duration();
     output.i_year = input->releaseYear();

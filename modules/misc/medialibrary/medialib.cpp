@@ -173,9 +173,6 @@ MediaLibrary::MediaLibrary( vlc_object_t* obj )
     auto userDir = wrapCPtr( config_GetUserDir( VLC_USERDATA_DIR ) );
     std::string mlDir = std::string{ userDir.get() } + "/ml/";
 
-    //tmp:
-    unlink( (mlDir + "ml.db").c_str() );
-
     auto initStatus = m_ml->initialize( mlDir + "ml.db", mlDir + "thumbnails/", this );
     switch ( initStatus )
     {

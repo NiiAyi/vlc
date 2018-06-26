@@ -34,6 +34,7 @@
 #include <medialibrary/IArtist.h>
 #include <medialibrary/IGenre.h>
 #include <medialibrary/IMetadata.h>
+#include <medialibrary/IShow.h>
 
 #include <sstream>
 
@@ -606,6 +607,45 @@ int MediaLibrary::List( int listQuery, const vlc_ml_query_params_t* params, va_l
             }
             break;
         }
+        case VLC_ML_LIST_SHOWS:
+        case VLC_ML_COUNT_SHOWS:
+        {
+            auto query = m_ml->shows( paramsPtr );
+            switch ( listQuery )
+            {
+                case VLC_ML_LIST_SHOWS:
+                    *va_arg( args, vlc_ml_show_list_t** ) = ml_convert_list<vlc_ml_show_list_t>(
+                                query->items( nbItems, offset ) );
+                    break;
+                case VLC_ML_COUNT_SHOWS:
+                    *va_arg( args, int64_t* ) = query->count();
+                    break;
+                default:
+                    vlc_assert_unreachable();
+            }
+            break;
+        }
+        case VLC_ML_LIST_SHOW_EPISODES:
+        case VLC_ML_COUNT_SHOW_EPISODES:
+        {
+            auto show = m_ml->show( va_arg( args, int64_t ) );
+            if ( show == nullptr )
+                 return VLC_EGENERIC;
+            auto query = show->episodes( paramsPtr );
+            switch ( listQuery )
+            {
+                case VLC_ML_LIST_SHOW_EPISODES:
+                    *va_arg( args, vlc_ml_media_list_t**) = ml_convert_list<vlc_ml_media_list_t>(
+                                query->items( nbItems, offset ) );
+                    break;
+                case VLC_ML_COUNT_SHOW_EPISODES:
+                    *va_arg( args, int64_t* ) = query->count();
+                    break;
+                default:
+                    vlc_assert_unreachable();
+            }
+        }
+
     }
     return VLC_SUCCESS;
 }

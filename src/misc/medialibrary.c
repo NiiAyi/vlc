@@ -29,7 +29,7 @@
 
 #include <assert.h>
 
-void vlc_ml_entrypoints_release( ml_entrypoint_t* p_list, size_t i_nb_items )
+void vlc_ml_entrypoints_release( vlc_ml_entrypoint_t* p_list, size_t i_nb_items )
 {
     for ( size_t i = 0; i < i_nb_items; ++i )
     {
@@ -60,7 +60,7 @@ void vlc_ml_release( vlc_medialibrary_t* p_ml )
     vlc_object_release( p_ml );
 }
 
-static void vlc_ml_show_release_inner( ml_show_t* p_show )
+static void vlc_ml_show_release_inner( vlc_ml_show_t* p_show )
 {
     free( p_show->psz_artwork_mrl );
     free( p_show->psz_name );
@@ -68,7 +68,7 @@ static void vlc_ml_show_release_inner( ml_show_t* p_show )
     free( p_show->psz_tvdb_id );
 }
 
-void vlc_ml_show_release( ml_show_t* p_show )
+void vlc_ml_show_release( vlc_ml_show_t* p_show )
 {
     if ( p_show == NULL )
         return;
@@ -76,20 +76,20 @@ void vlc_ml_show_release( ml_show_t* p_show )
     free( p_show );
 }
 
-static void vlc_ml_media_release_inner( ml_media_t* p_media )
+static void vlc_ml_media_release_inner( vlc_ml_media_t* p_media )
 {
     vlc_ml_file_list_release( p_media->p_files );
     free( p_media->psz_title );
     free( p_media->psz_artwork_mrl );
     switch( p_media->i_subtype )
     {
-        case ML_MEDIA_SUBTYPE_ALBUMTRACK:
+        case VLC_ML_MEDIA_SUBTYPE_ALBUMTRACK:
             break;
-        case ML_MEDIA_SUBTYPE_SHOW_EPISODE:
+        case VLC_ML_MEDIA_SUBTYPE_SHOW_EPISODE:
             free( p_media->show_episode.psz_summary );
             free( p_media->show_episode.psz_tvdb_id );
             break;
-        case ML_MEDIA_SUBTYPE_MOVIE:
+        case VLC_ML_MEDIA_SUBTYPE_MOVIE:
             free( p_media->movie.psz_summary );
             free( p_media->movie.psz_imdb_id );
             break;
@@ -98,7 +98,7 @@ static void vlc_ml_media_release_inner( ml_media_t* p_media )
     }
 }
 
-static void vlc_ml_artist_release_inner( ml_artist_t* p_artist )
+static void vlc_ml_artist_release_inner( vlc_ml_artist_t* p_artist )
 {
     free( p_artist->psz_artwork_mrl );
     free( p_artist->psz_name );
@@ -106,7 +106,7 @@ static void vlc_ml_artist_release_inner( ml_artist_t* p_artist )
     free( p_artist->psz_mb_id );
 }
 
-void vlc_ml_artist_release( ml_artist_t* p_artist )
+void vlc_ml_artist_release( vlc_ml_artist_t* p_artist )
 {
     if ( p_artist == NULL )
         return;
@@ -114,7 +114,7 @@ void vlc_ml_artist_release( ml_artist_t* p_artist )
     free( p_artist );
 }
 
-static void vlc_ml_album_release_inner( ml_album_t* p_album )
+static void vlc_ml_album_release_inner( vlc_ml_album_t* p_album )
 {
     free( p_album->psz_artist );
     free( p_album->psz_artwork_mrl );
@@ -123,7 +123,7 @@ static void vlc_ml_album_release_inner( ml_album_t* p_album )
     vlc_ml_artist_list_release( p_album->p_featuring );
 }
 
-void vlc_ml_album_release( ml_album_t* p_album )
+void vlc_ml_album_release( vlc_ml_album_t* p_album )
 {
     if ( p_album == NULL )
         return;
@@ -131,7 +131,7 @@ void vlc_ml_album_release( ml_album_t* p_album )
     free( p_album );
 }
 
-void vlc_ml_genre_release( ml_genre_t* p_genre )
+void vlc_ml_genre_release( vlc_ml_genre_t* p_genre )
 {
     if ( p_genre == NULL )
         return;
@@ -141,7 +141,7 @@ void vlc_ml_genre_release( ml_genre_t* p_genre )
 
 /* Lists release */
 
-void vlc_ml_media_release( ml_media_t* p_media )
+void vlc_ml_media_release( vlc_ml_media_t* p_media )
 {
     if ( p_media == NULL )
         return;
@@ -149,7 +149,7 @@ void vlc_ml_media_release( ml_media_t* p_media )
     free( p_media );
 }
 
-void vlc_ml_label_list_release( ml_label_list_t* p_list )
+void vlc_ml_label_list_release( vlc_ml_label_list_t* p_list )
 {
     if ( p_list == NULL )
         return;
@@ -159,7 +159,7 @@ void vlc_ml_label_list_release( ml_label_list_t* p_list )
     free( p_list );
 }
 
-void vlc_ml_file_list_release( ml_file_list_t* p_list )
+void vlc_ml_file_list_release( vlc_ml_file_list_t* p_list )
 {
     if ( p_list == NULL )
         return;
@@ -169,7 +169,7 @@ void vlc_ml_file_list_release( ml_file_list_t* p_list )
     free( p_list );
 }
 
-void vlc_ml_artist_list_release( ml_artist_list_t* p_list )
+void vlc_ml_artist_list_release( vlc_ml_artist_list_t* p_list )
 {
     if ( p_list == NULL )
         return;
@@ -180,7 +180,7 @@ void vlc_ml_artist_list_release( ml_artist_list_t* p_list )
 }
 
 
-void vlc_ml_media_list_release( ml_media_list_t* p_list )
+void vlc_ml_media_list_release( vlc_ml_media_list_t* p_list )
 {
     if ( p_list == NULL )
         return;
@@ -190,7 +190,7 @@ void vlc_ml_media_list_release( ml_media_list_t* p_list )
     free( p_list );
 }
 
-void vlc_ml_album_list_release( ml_album_list_t* p_list )
+void vlc_ml_album_list_release( vlc_ml_album_list_t* p_list )
 {
     if ( p_list == NULL )
         return;
@@ -200,7 +200,7 @@ void vlc_ml_album_list_release( ml_album_list_t* p_list )
     free( p_list );
 }
 
-void vlc_ml_show_list_release( ml_show_list_t* p_list )
+void vlc_ml_show_list_release( vlc_ml_show_list_t* p_list )
 {
     if ( p_list == NULL )
         return;
@@ -210,7 +210,7 @@ void vlc_ml_show_list_release( ml_show_list_t* p_list )
     free( p_list );
 }
 
-void vlc_ml_genre_list_release( ml_genre_list_t* p_list )
+void vlc_ml_genre_list_release( vlc_ml_genre_list_t* p_list )
 {
     if ( p_list == NULL )
         return;

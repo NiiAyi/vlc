@@ -35,7 +35,7 @@
 #include <medialibrary/IGenre.h>
 #include <medialibrary/ILabel.h>
 
-bool Convert( const medialibrary::IAlbumTrack* input, ml_album_track_t& output )
+bool Convert( const medialibrary::IAlbumTrack* input, vlc_ml_album_track_t& output )
 {
     output.i_artist_id = input->artistId();
     output.i_album_id = input->albumId();
@@ -45,7 +45,7 @@ bool Convert( const medialibrary::IAlbumTrack* input, ml_album_track_t& output )
     return true;
 }
 
-bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output )
+bool Convert( const medialibrary::IShowEpisode* input, vlc_ml_show_episode_t& output )
 {
     output.i_episode_nb = input->episodeNumber();
     output.i_season_number = input->seasonNumber();
@@ -68,7 +68,7 @@ bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output
     return true;
 }
 
-bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
+bool Convert( const medialibrary::IMovie* input, vlc_ml_movie_t& output )
 {
     if ( input->imdbId().empty() == false )
     {
@@ -89,19 +89,19 @@ bool Convert( const medialibrary::IMovie* input, ml_movie_t& output )
     return true;
 }
 
-bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
+bool Convert( const medialibrary::IMedia* input, vlc_ml_media_t& output )
 {
     output.i_id = input->id();
 
     switch ( input->type() )
     {
         case medialibrary::IMedia::Type::Audio:
-            output.i_type = ML_MEDIA_TYPE_AUDIO;
+            output.i_type = VLC_ML_MEDIA_TYPE_AUDIO;
             switch( input->subType() )
             {
                 case medialibrary::IMedia::SubType::AlbumTrack:
                 {
-                    output.i_subtype = ML_MEDIA_SUBTYPE_ALBUMTRACK;
+                    output.i_subtype = VLC_ML_MEDIA_SUBTYPE_ALBUMTRACK;
                     auto albumTrack = input->albumTrack();
                     if ( albumTrack == nullptr )
                         return false;
@@ -115,12 +115,12 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
             break;
         case medialibrary::IMedia::Type::Video:
         {
-            output.i_type = ML_MEDIA_TYPE_VIDEO;
+            output.i_type = VLC_ML_MEDIA_TYPE_VIDEO;
             switch( input->subType() )
             {
                 case medialibrary::IMedia::SubType::Movie:
                 {
-                    output.i_subtype = ML_MEDIA_SUBTYPE_MOVIE;
+                    output.i_subtype = VLC_ML_MEDIA_SUBTYPE_MOVIE;
                     auto movie = input->movie();
                     if ( movie == nullptr )
                         return false;
@@ -130,7 +130,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
                 }
                 case medialibrary::IMedia::SubType::ShowEpisode:
                 {
-                    output.i_subtype = ML_MEDIA_SUBTYPE_SHOW_EPISODE;
+                    output.i_subtype = VLC_ML_MEDIA_SUBTYPE_SHOW_EPISODE;
                     auto episode = input->showEpisode();
                     if ( episode == nullptr )
                         return false;
@@ -139,7 +139,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
                     break;
                 }
                 case medialibrary::IMedia::SubType::Unknown:
-                    output.i_subtype = ML_MEDIA_SUBTYPE_UNKNOWN;
+                    output.i_subtype = VLC_ML_MEDIA_SUBTYPE_UNKNOWN;
                     break;
                 case medialibrary::IMedia::SubType::AlbumTrack:
                     vlc_assert_unreachable();
@@ -147,7 +147,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
             break;
         }
         case medialibrary::IMedia::Type::External:
-            output.i_type = ML_MEDIA_TYPE_EXTERNAL;
+            output.i_type = VLC_ML_MEDIA_TYPE_EXTERNAL;
             break;
         case medialibrary::IMedia::Type::Unknown:
             vlc_assert_unreachable();
@@ -162,7 +162,7 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
         return false;
 
     auto files = input->files();
-    output.p_files = ml_convert_list<ml_file_list_t>( files );
+    output.p_files = ml_convert_list<vlc_ml_file_list_t>( files );
     if ( output.p_files == nullptr )
         return false;
 
@@ -178,24 +178,24 @@ bool Convert( const medialibrary::IMedia* input, ml_media_t& output )
     return true;
 }
 
-bool Convert( const medialibrary::IFile* input, ml_file_t& output )
+bool Convert( const medialibrary::IFile* input, vlc_ml_file_t& output )
 {
     switch ( input->type() )
     {
         case medialibrary::IFile::Type::Main:
-            output.i_type = ML_FILE_TYPE_MAIN;
+            output.i_type = VLC_ML_FILE_TYPE_MAIN;
             break;
         case medialibrary::IFile::Type::Part:
-            output.i_type = ML_FILE_TYPE_PART;
+            output.i_type = VLC_ML_FILE_TYPE_PART;
             break;
         case medialibrary::IFile::Type::Soundtrack:
-            output.i_type = ML_FILE_TYPE_SOUNDTRACK;
+            output.i_type = VLC_ML_FILE_TYPE_SOUNDTRACK;
             break;
         case medialibrary::IFile::Type::Subtitles:
-            output.i_type = ML_FILE_TYPE_SUBTITLE;
+            output.i_type = VLC_ML_FILE_TYPE_SUBTITLE;
             break;
         case medialibrary::IFile::Type::Playlist:
-            output.i_type = ML_FILE_TYPE_PLAYLIST;
+            output.i_type = VLC_ML_FILE_TYPE_PLAYLIST;
             break;
         default:
             vlc_assert_unreachable();
@@ -207,11 +207,11 @@ bool Convert( const medialibrary::IFile* input, ml_file_t& output )
     return true;
 }
 
-bool Convert( const medialibrary::IAlbum* input, ml_album_t& output )
+bool Convert( const medialibrary::IAlbum* input, vlc_ml_album_t& output )
 {
     output.i_id = input->id();
     auto featuring = input->artists( false )->all();
-    output.p_featuring = ml_convert_list<ml_artist_list_t>( featuring );
+    output.p_featuring = ml_convert_list<vlc_ml_artist_list_t>( featuring );
     output.i_nb_tracks = input->nbTracks();
     output.i_duration = input->duration();
     output.i_year = input->releaseYear();
@@ -261,7 +261,7 @@ bool Convert( const medialibrary::IAlbum* input, ml_album_t& output )
     return true;
 }
 
-bool Convert( const medialibrary::IArtist* input, ml_artist_t& output )
+bool Convert( const medialibrary::IArtist* input, vlc_ml_artist_t& output )
 {
     output.i_id = input->id();
     output.i_nb_album = input->nbAlbums();
@@ -307,12 +307,12 @@ bool Convert( const medialibrary::IArtist* input, ml_artist_t& output )
     return true;
 }
 
-void Release( ml_genre_t& genre )
+void Release( vlc_ml_genre_t& genre )
 {
     free( genre.psz_name );
 }
 
-bool Convert( const medialibrary::IGenre* input, ml_genre_t& output )
+bool Convert( const medialibrary::IGenre* input, vlc_ml_genre_t& output )
 {
     output.i_id = input->id();
     output.i_nb_tracks = input->nbTracks();
@@ -323,7 +323,7 @@ bool Convert( const medialibrary::IGenre* input, ml_genre_t& output )
     return true;
 }
 
-bool Convert( const medialibrary::IShow* input, ml_show_t& output )
+bool Convert( const medialibrary::IShow* input, vlc_ml_show_t& output )
 {
     output.i_id = input->id();
     output.i_release_year = input->releaseDate();
@@ -364,7 +364,7 @@ bool Convert( const medialibrary::IShow* input, ml_show_t& output )
     return true;
 }
 
-bool Convert( const medialibrary::ILabel* input, ml_label_t& output )
+bool Convert( const medialibrary::ILabel* input, vlc_ml_label_t& output )
 {
     assert( input->name().empty() == false );
     output.psz_name = strdup( input->name().c_str() );

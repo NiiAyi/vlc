@@ -125,7 +125,7 @@ class MediaLibrary : public medialibrary::IMediaLibraryCb
 public:
     MediaLibrary( vlc_object_t* obj );
     int Control( int query, va_list args );
-    int List( int query, const ml_query_params_t* params, va_list args );
+    int List( int query, const vlc_ml_query_params_t* params, va_list args );
     void* Get( int query, int64_t id );
 
 private:
@@ -166,26 +166,26 @@ public:
     virtual void onMediaThumbnailReady(medialibrary::MediaPtr media, bool success) override;
 };
 
-bool Convert( const medialibrary::IMedia* input, ml_media_t& output );
+bool Convert( const medialibrary::IMedia* input, vlc_ml_media_t& output );
 
-bool Convert( const medialibrary::IFile* input, ml_file_t& output );
+bool Convert( const medialibrary::IFile* input, vlc_ml_file_t& output );
 
-bool Convert( const medialibrary::IMovie* input, ml_movie_t& output );
+bool Convert( const medialibrary::IMovie* input, vlc_ml_movie_t& output );
 
-bool Convert( const medialibrary::IShowEpisode* input, ml_show_episode_t& output );
+bool Convert( const medialibrary::IShowEpisode* input, vlc_ml_show_episode_t& output );
 
-bool Convert( const medialibrary::IAlbumTrack* input, ml_album_track_t& output );
+bool Convert( const medialibrary::IAlbumTrack* input, vlc_ml_album_track_t& output );
 
-bool Convert( const medialibrary::IAlbum* input, ml_album_t& output );
+bool Convert( const medialibrary::IAlbum* input, vlc_ml_album_t& output );
 
-bool Convert( const medialibrary::IArtist* input, ml_artist_t& output );
+bool Convert( const medialibrary::IArtist* input, vlc_ml_artist_t& output );
 
-void Release( ml_genre_t& genre );
-bool Convert( const medialibrary::IGenre* input, ml_genre_t& output );
+void Release( vlc_ml_genre_t& genre );
+bool Convert( const medialibrary::IGenre* input, vlc_ml_genre_t& output );
 
-bool Convert( const medialibrary::IShow* input, ml_show_t& output );
+bool Convert( const medialibrary::IShow* input, vlc_ml_show_t& output );
 
-bool Convert( const medialibrary::ILabel* input, ml_label_t& output );
+bool Convert( const medialibrary::ILabel* input, vlc_ml_label_t& output );
 
 /**
  * Release a heap allocated instance of T.
@@ -200,18 +200,18 @@ void Release( T* entity )
 }
 
 // Dispatcher to libvlccore's ml release functions
-static inline void Release( ml_show_t* show ) { vlc_ml_show_release( show ); }
-static inline void Release( ml_artist_t* artist ) { vlc_ml_artist_release( artist ); }
-static inline void Release( ml_album_t* album ) { vlc_ml_album_release( album ); }
-static inline void Release( ml_genre_t* genre ) { vlc_ml_genre_release( genre ); }
-static inline void Release( ml_media_t* media ) { vlc_ml_media_release( media ); }
-static inline void Release( ml_label_list_t* list ) { vlc_ml_label_list_release( list ); }
-static inline void Release( ml_file_list_t* list ) { vlc_ml_file_list_release( list ); }
-static inline void Release( ml_artist_list_t* list ) { vlc_ml_artist_list_release( list ); }
-static inline void Release( ml_media_list_t* list ) { vlc_ml_media_list_release( list ); }
-static inline void Release( ml_album_list_t* list ) { vlc_ml_album_list_release( list ); }
-static inline void Release( ml_show_list_t* list ) { vlc_ml_show_list_release( list ); }
-static inline void Release( ml_genre_list_t* list ) { vlc_ml_genre_list_release( list ); }
+static inline void Release( vlc_ml_show_t* show ) { vlc_ml_show_release( show ); }
+static inline void Release( vlc_ml_artist_t* artist ) { vlc_ml_artist_release( artist ); }
+static inline void Release( vlc_ml_album_t* album ) { vlc_ml_album_release( album ); }
+static inline void Release( vlc_ml_genre_t* genre ) { vlc_ml_genre_release( genre ); }
+static inline void Release( vlc_ml_media_t* media ) { vlc_ml_media_release( media ); }
+static inline void Release( vlc_ml_label_list_t* list ) { vlc_ml_label_list_release( list ); }
+static inline void Release( vlc_ml_file_list_t* list ) { vlc_ml_file_list_release( list ); }
+static inline void Release( vlc_ml_artist_list_t* list ) { vlc_ml_artist_list_release( list ); }
+static inline void Release( vlc_ml_media_list_t* list ) { vlc_ml_media_list_release( list ); }
+static inline void Release( vlc_ml_album_list_t* list ) { vlc_ml_album_list_release( list ); }
+static inline void Release( vlc_ml_show_list_t* list ) { vlc_ml_show_list_release( list ); }
+static inline void Release( vlc_ml_genre_list_t* list ) { vlc_ml_genre_list_release( list ); }
 
 template <typename To, typename From>
 To* ml_convert_list( const std::vector<std::shared_ptr<From>>& input )

@@ -120,7 +120,6 @@ static void vlc_ml_album_release_inner( vlc_ml_album_t* p_album )
     free( p_album->psz_artwork_mrl );
     free( p_album->psz_summary );
     free( p_album->psz_title );
-    vlc_ml_artist_list_release( p_album->p_featuring );
 }
 
 void vlc_ml_album_release( vlc_ml_album_t* p_album )

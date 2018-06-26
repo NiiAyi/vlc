@@ -174,8 +174,6 @@ typedef struct vlc_ml_album_t {
     char* psz_artist;
     int64_t i_artist_id;
 
-    vlc_ml_artist_list_t* p_featuring;
-
     size_t i_nb_tracks;
     unsigned int i_duration;
     unsigned int i_year;
@@ -471,7 +469,9 @@ enum vlc_ml_list_queries
 
     /* Album specific listings */
     VLC_ML_LIST_ALBUM_TRACKS,     /**< arg1: The album id. arg2 (out): vlc_ml_media_list_t**  */
-    VLC_ML_COUNT_ALBUM_TRACKS,    /**< arg1: The album id. arg2 (out): size_t**  */
+    VLC_ML_COUNT_ALBUM_TRACKS,    /**< arg1: The album id. arg2 (out): size_t*  */
+    VLC_ML_LIST_ALBUM_ARTISTS,    /**< arg1: The album id. arg2 (out): vlc_ml_album_list_t**  */
+    VLC_ML_COUNT_ALBUM_ARTISTS,    /**< arg1: The album id. arg2 (out): size_t*  */
 
     /* Artist specific listings */
     VLC_ML_LIST_ARTIST_ALBUMS,  /**< arg1: The artist id. arg2(out): vlc_ml_album_list_t**    */
@@ -508,6 +508,22 @@ static inline size_t vlc_ml_count_album_tracks( vlc_medialibrary_t* p_ml, vlc_ml
 {
     size_t count;
     if ( p_ml->pf_list( p_ml, VLC_ML_COUNT_ALBUM_TRACKS, params, i_album_id, &count ) != VLC_SUCCESS )
+        return 0;
+    return count;
+}
+
+static inline vlc_ml_media_list_t* vlc_ml_list_album_artists( vlc_medialibrary_t* p_ml, vlc_ml_query_params_t* params, int64_t i_album_id )
+{
+    vlc_ml_media_list_t* res;
+    if ( p_ml->pf_list( p_ml, VLC_ML_LIST_ALBUM_ARTISTS, params, i_album_id, &res ) != VLC_SUCCESS )
+        return NULL;
+    return res;
+}
+
+static inline size_t vlc_ml_count_album_artists( vlc_medialibrary_t* p_ml, vlc_ml_query_params_t* params, int64_t i_album_id )
+{
+    size_t count;
+    if ( p_ml->pf_list( p_ml, VLC_ML_COUNT_ALBUM_ARTISTS, params, i_album_id, &count ) != VLC_SUCCESS )
         return 0;
     return count;
 }

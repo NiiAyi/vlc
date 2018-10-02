@@ -50,6 +50,7 @@
 #include <vlc_url.h>
 #include <vlc_charset.h>
 #include <vlc_fs.h>
+#include <vlc_image.h>
 #include <vlc_strings.h>
 #include <vlc_modules.h>
 #include <vlc_stream.h>
@@ -63,7 +64,7 @@ static  void *Run( void * );
 static  void *Preparse( void * );
 
 static input_thread_t * Create  ( vlc_object_t *, input_thread_events_cb, void *,
-                                  input_item_t *, const char *, bool,
+                                  input_item_t *, const char *, bool, bool,
                                   input_resource_t *, vlc_renderer_item_t * );
 static  int             Init    ( input_thread_t *p_input );
 static void             End     ( input_thread_t *p_input );
@@ -132,7 +133,7 @@ input_thread_t *input_Create( vlc_object_t *p_parent,
                               vlc_renderer_item_t *p_renderer )
 {
     return Create( p_parent, events_cb, events_data, p_item, psz_log, false,
-                   p_resource, p_renderer );
+                   false, p_resource, p_renderer );
 }
 
 #undef input_Read
@@ -147,7 +148,7 @@ int input_Read( vlc_object_t *p_parent, input_item_t *p_item,
                 input_thread_events_cb events_cb, void *events_data )
 {
     input_thread_t *p_input = Create( p_parent, events_cb, events_data, p_item,
-                                      NULL, false, NULL, NULL );
+                                      NULL, false, false, NULL, NULL );
     if( !p_input )
         return VLC_EGENERIC;
 
@@ -165,7 +166,7 @@ input_thread_t *input_CreatePreparser( vlc_object_t *parent,
                                        input_thread_events_cb events_cb,
                                        void *events_data, input_item_t *item )
 {
-    return Create( parent, events_cb, events_data, item, NULL, true, NULL, NULL );
+    return Create( parent, events_cb, events_data, item, NULL, true, false, NULL, NULL );
 }
 
 /**
@@ -301,6 +302,88 @@ input_item_t *input_GetItem( input_thread_t *p_input )
     return input_priv(p_input)->p_item;
 }
 
+struct thumbnailer_context
+{
+    picture_t *p_pic;
+    vlc_mutex_t lock;
+    vlc_cond_t cond;
+    bool b_done;
+};
+
+static void
+on_thumbnailer_input_event(input_thread_t *input,
+                           const struct vlc_input_event *event, void *userdata)
+{
+    VLC_UNUSED(input);
+    if (event->type == INPUT_EVENT_THUMBNAIL_READY)
+    {
+        struct thumbnailer_context* ctx = userdata;
+        vlc_mutex_lock(&ctx->lock);
+        ctx->b_done = true;
+        ctx->p_pic = event->thumbnail.p_pic;
+        vlc_mutex_unlock(&ctx->lock);
+        vlc_cond_signal(&ctx->cond);
+    }
+}
+
+int input_CreateThumbnail(vlc_object_t* p_parent, input_item_t* p_input_item,
+                          vlc_tick_t i_time, unsigned int i_width,
+                          unsigned int i_height, const char* psz_out)
+{
+    struct thumbnailer_context ctx;
+    vlc_mutex_init(&ctx.lock);
+    vlc_cond_init(&ctx.cond);
+    ctx.p_pic = NULL;
+    ctx.b_done = false;
+    input_thread_t* p_input = Create(p_parent, on_thumbnailer_input_event, &ctx,
+                                     p_input_item, NULL, false, true, NULL, NULL);
+    if (p_input == NULL)
+        goto error;
+    var_SetFloat( p_input, "start-time", secf_from_vlc_tick( i_time ) );
+
+    if (input_Start(p_input) != VLC_SUCCESS)
+        goto error;
+
+    vlc_mutex_lock(&ctx.lock);
+    mutex_cleanup_push(&ctx.lock);
+    while (!ctx.b_done)
+        vlc_cond_wait(&ctx.cond, &ctx.lock);
+    vlc_mutex_unlock(&ctx.lock);
+    vlc_cleanup_pop();
+
+    input_Stop(p_input);
+    input_Close(p_input);
+
+    vlc_cond_destroy(&ctx.cond);
+    vlc_mutex_destroy(&ctx.lock);
+
+    block_t *p_image;
+
+    if (picture_Export( p_parent, &p_image, NULL, ctx.p_pic, VLC_CODEC_JPEG,
+                        i_width, i_height ) != VLC_SUCCESS)
+        goto error;
+    picture_Release(ctx.p_pic);
+    ctx.p_pic = NULL;
+    FILE* p_file = vlc_fopen(psz_out, "wb");
+    if (!p_file) {
+        block_Release(p_image);
+        goto error;
+    }
+    if(fwrite(p_image->p_buffer, p_image->i_buffer, 1, p_file) != 1)
+        msg_Warn(p_parent, "Failed to write the thumbnail");
+    fclose(p_file);
+    return VLC_SUCCESS;
+
+error:
+    if (ctx.p_pic)
+        picture_Release(ctx.p_pic);
+    if (p_input)
+        vlc_object_release(p_input);
+    vlc_cond_destroy(&ctx.cond);
+    vlc_mutex_destroy(&ctx.lock);
+    return VLC_EGENERIC;
+}
+
 /*****************************************************************************
  * This function creates a new input, and returns a pointer
  * to its description. On error, it returns NULL.
@@ -310,7 +393,8 @@ input_item_t *input_GetItem( input_thread_t *p_input )
 static input_thread_t *Create( vlc_object_t *p_parent,
                                input_thread_events_cb events_cb, void *events_data,
                                input_item_t *p_item, const char *psz_header,
-                               bool b_preparsing, input_resource_t *p_resource,
+                               bool b_preparsing, bool b_thumbnailing,
+                               input_resource_t *p_resource,
                                vlc_renderer_item_t *p_renderer )
 {
     /* Allocate descriptor */
@@ -347,6 +431,7 @@ static input_thread_t *Create( vlc_object_t *p_parent,
     priv->is_running = false;
     priv->is_stopped = false;
     priv->b_recording = false;
+    priv->b_thumbnailing = b_thumbnailing;
     priv->i_rate = INPUT_RATE_DEFAULT;
     memset( &priv->bookmark, 0, sizeof(priv->bookmark) );
     TAB_INIT( priv->i_bookmark, priv->pp_bookmark );

@@ -154,6 +154,7 @@ input_Control
 input_Create
 input_CreateFilename
 input_CreatePreparser
+input_CreateThumbnail
 input_DecoderCreate
 input_DecoderDelete
 input_DecoderDecode

@@ -388,6 +388,9 @@ typedef enum input_event_type_e
     /* (pre-)parsing events */
     INPUT_EVENT_SUBITEMS,
 
+    /* Thumbnail generation */
+    INPUT_EVENT_THUMBNAIL_READY,
+
 } input_event_type_e;
 
 #define VLC_INPUT_CAPABILITIES_SEEKABLE (1<<0)
@@ -475,6 +478,12 @@ struct vlc_input_event_vout
     vout_thread_t *vout;
 };
 
+struct vlc_input_event_thumbnail_ready
+{
+    picture_t* p_pic;
+    bool b_success;
+};
+
 struct vlc_input_event
 {
     input_event_type_e type;
@@ -514,6 +523,8 @@ struct vlc_input_event
         struct vlc_input_event_vout vout;
         /* INPUT_EVENT_SUBITEMS */
         input_item_node_t *subitems;
+        /* INPUT_EVENT_THUBNAIL_READY */
+        struct vlc_input_event_thumbnail_ready thumbnail;
     };
 };
 
@@ -627,6 +638,10 @@ VLC_API void input_SetPosition( input_thread_t *, float f_position, bool b_fast 
 
 VLC_API void input_LegacyEvents(input_thread_t *, const struct vlc_input_event *, void * );
 VLC_API void input_LegacyVarInit ( input_thread_t * );
+
+VLC_API int input_CreateThumbnail(vlc_object_t* p_parent, input_item_t* p_input, vlc_tick_t i_time,
+                                  unsigned int i_width, unsigned int i_height,
+                                  const char* psz_out);
 
 /**
  * Get the input item for an input thread

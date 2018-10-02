@@ -1126,6 +1126,25 @@ static void DecoderQueueVideo( decoder_t *p_dec, picture_t *p_pic )
     p_owner->pf_update_stat( p_owner, 1, i_lost );
 }
 
+static int thumbnailer_update_format( decoder_t *p_dec )
+{
+    return 0;
+}
+
+static picture_t *thumbnailer_buffer_new( decoder_t *p_dec )
+{
+    return picture_NewFromFormat( &p_dec->fmt_out.video );
+}
+
+static void DecoderQueueThumbnail( decoder_t *p_dec, picture_t *p_pic )
+{
+    struct decoder_owner *p_owner = dec_get_owner( p_dec );
+    input_SendEvent(p_owner->p_input, &(struct vlc_input_event) {
+        .type = INPUT_EVENT_THUMBNAIL_READY,
+        .thumbnail = { picture_Hold(p_pic), true }
+    });
+}
+
 static void DecoderPlayAudio( decoder_t *p_dec, block_t *p_audio,
                              unsigned *restrict pi_lost_sum )
 {
@@ -1695,6 +1714,15 @@ static const struct decoder_owner_callbacks dec_video_cbs =
     },
     .get_attachments = DecoderGetInputAttachments,
 };
+static const struct decoder_owner_callbacks dec_thumbnailer_cbs =
+{
+    .video = {
+        .format_update = thumbnailer_update_format,
+        .buffer_new = thumbnailer_buffer_new,
+        .queue = DecoderQueueThumbnail,
+    },
+    .get_attachments = DecoderGetInputAttachments,
+};
 static const struct decoder_owner_callbacks dec_audio_cbs =
 {
     .audio = {
@@ -1810,7 +1838,10 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
     switch( fmt->i_cat )
     {
         case VIDEO_ES:
-            p_dec->cbs = &dec_video_cbs;
+            if( !input_priv( p_input )->b_thumbnailing )
+                p_dec->cbs = &dec_video_cbs;
+            else
+                p_dec->cbs = &dec_thumbnailer_cbs;
             p_owner->pf_update_stat = DecoderUpdateStatVideo;
             break;
         case AUDIO_ES:

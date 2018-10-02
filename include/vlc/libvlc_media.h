@@ -800,6 +800,11 @@ void libvlc_media_tracks_release( libvlc_media_track_t **p_tracks,
 LIBVLC_API
 libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md );
 
+LIBVLC_API
+int libvlc_media_get_thumbnail( libvlc_media_t *p_md, libvlc_time_t i_time,
+                                unsigned int i_width, unsigned int i_height,
+                                const char* psz_out );
+
 /**
  * Add a slave to the current media.
  *

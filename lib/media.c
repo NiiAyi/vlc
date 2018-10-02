@@ -1092,6 +1092,17 @@ libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md )
     }
 }
 
+int libvlc_media_get_thumbnail( libvlc_media_t *p_md, libvlc_time_t i_time,
+                                unsigned int i_width, unsigned int i_height,
+                                const char* psz_out )
+{
+    assert( p_md );
+    input_item_t *p_input_item = p_md->p_input_item;
+    return input_CreateThumbnail( VLC_OBJECT(p_md->p_libvlc_instance->p_libvlc_int),
+                                  p_input_item, VLC_TICK_FROM_MS(i_time),
+                                  i_width, i_height, psz_out );
+}
+
 int libvlc_media_slaves_add( libvlc_media_t *p_md,
                              libvlc_media_slave_type_t i_type,
                              unsigned int i_priority,

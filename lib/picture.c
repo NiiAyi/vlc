@@ -27,6 +27,7 @@
 #include <vlc/libvlc.h>
 #include <vlc/libvlc_picture.h>
 
+#include <vlc_atomic.h>
 #include <vlc_picture.h>
 #include <vlc_block.h>
 #include <vlc_fs.h>
@@ -35,32 +36,36 @@
 
 struct libvlc_picture_t
 {
+    vlc_atomic_rc_t rc;
     libvlc_picture_type_t i_type;
     block_t* p_converted;
     video_format_t fmt;
 };
 
 libvlc_picture_t* libvlc_picture_new( vlc_object_t* p_obj, picture_t* p_input,
-                                      vlc_fourcc_t i_format, unsigned int i_width,
-                                      unsigned int i_height )
+                                      libvlc_picture_type_t i_type,
+                                      unsigned int i_width, unsigned int i_height )
 {
     libvlc_picture_t *p_pic = malloc( sizeof( *p_pic ) );
     if ( unlikely( p_pic == NULL ) )
         return NULL;
-    switch( i_format )
+    vlc_atomic_rc_init( &p_pic->rc );
+    p_pic->i_type = i_type;
+    vlc_fourcc_t format;
+    switch ( i_type )
     {
-        case VLC_CODEC_JPEG:
-            p_pic->i_type = libvlc_Jpg;
+        case libvlc_Argb:
+            format = VLC_CODEC_ARGB;
             break;
-        case VLC_CODEC_PNG:
-            p_pic->i_type = libvlc_Png;
+        case libvlc_Jpg:
+            format = VLC_CODEC_JPEG;
             break;
-        case VLC_CODEC_ARGB:
-            p_pic->i_type = libvlc_Argb;
+        case libvlc_Png:
+            format = VLC_CODEC_PNG;
             break;
     }
     if ( picture_Export( p_obj, &p_pic->p_converted, &p_pic->fmt,
-                         p_input, i_format, i_width, i_height ) != VLC_SUCCESS )
+                         p_input, format, i_width, i_height ) != VLC_SUCCESS )
     {
         free( p_pic );
         return NULL;
@@ -69,10 +74,19 @@ libvlc_picture_t* libvlc_picture_new( vlc_object_t* p_obj, picture_t* p_input,
     return p_pic;
 }
 
+void libvlc_picture_retain( libvlc_picture_t* p_pic )
+{
+    vlc_atomic_rc_inc( &p_pic->rc );
+}
+
 void libvlc_picture_release( libvlc_picture_t* p_pic )
 {
+    if ( vlc_atomic_rc_dec( &p_pic->rc ) == false )
+        return;
+    video_format_Clean( &p_pic->fmt );
     if ( p_pic->p_converted )
         block_Release( p_pic->p_converted );
+    free( p_pic );
 }
 
 int libvlc_picture_save( const libvlc_picture_t* p_pic, const char* psz_path )

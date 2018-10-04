@@ -36,24 +36,80 @@ typedef enum libvlc_picture_type_t
     libvlc_Jpg,
 } libvlc_picture_type_t;
 
+/**
+ * Increment the reference count of this picture.
+ *
+ * \see libvlc_picture_release()
+ * \param p_pic A picture object
+ */
+LIBVLC_API void
+libvlc_picture_retain( libvlc_picture_t* p_pic );
+
+/**
+ * Decrement the reference count of this picture.
+ * When the reference count reaches 0, the picture will be released.
+ * The picture must not be accessed after calling this function.
+ *
+ * \see libvlc_picture_retain
+ * \param p_pic A picture object
+ */
 LIBVLC_API void
 libvlc_picture_release( libvlc_picture_t* p_pic );
 
+/**
+ * Saves this picture to a file. The image format is the same as the one
+ * returned by \link libvlc_picture_type \endlink
+ *
+ * \param p_pic A picture object
+ * \param psz_path The path to the generated file
+ * \return 0 in case of success, -1 otherwise
+ */
 LIBVLC_API int
 libvlc_picture_save( const libvlc_picture_t* p_pic, const char* psz_path );
 
+/**
+ * Returns the image internal buffer, including potential padding.
+ * The libvlc_picture_t owns the returned buffer, which must not be modified nor
+ * freed.
+ *
+ * \param p_pic A picture object
+ * \param p_size A pointer to a size_t that will hold the size of the buffer [required]
+ * \return A pointer to the internal buffer.
+ */
 LIBVLC_API const unsigned char*
 libvlc_picture_get_buffer( const libvlc_picture_t* p_pic, size_t *p_size );
 
+/**
+ * Returns the picture type
+ *
+ * \param p_pic A picture object
+ * \see libvlc_picture_type_t
+ */
 LIBVLC_API libvlc_picture_type_t
 libvlc_picture_type( const libvlc_picture_t* p_pic );
 
+/**
+ * Returns the image stride, ie. the number of bytes per line.
+ * This can only be called on images of type libvlc_Argb
+ *
+ * \param p_pic A picture object
+ */
 LIBVLC_API unsigned int
 libvlc_picture_get_stride( const libvlc_picture_t* p_pic );
 
+/**
+ * Returns the width of the image in pixels
+ *
+ * \param p_pic A picture object
+ */
 LIBVLC_API unsigned int
 libvlc_picture_get_width( const libvlc_picture_t* p_pic );
 
+/**
+ * Returns the height of the image in pixels
+ *
+ * \param p_pic A picture object
+ */
 LIBVLC_API unsigned int
 libvlc_picture_get_height( const libvlc_picture_t* p_pic );
 

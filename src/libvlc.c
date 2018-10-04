@@ -225,6 +225,10 @@ int libvlc_InternalInit( libvlc_int_t *p_libvlc, int i_argc,
             msg_Warn( p_libvlc, "Media library initialization failed" );
     }
 
+    priv->p_thumbnailer = vlc_thumbnailer_Create( VLC_OBJECT( p_libvlc ) );
+    if ( priv->p_thumbnailer == NULL )
+        msg_Warn( p_libvlc, "Failed to instantiate VLC thumbnailer" );
+
     /*
      * Initialize hotkey handling
      */

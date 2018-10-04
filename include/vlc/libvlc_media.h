@@ -800,6 +800,32 @@ void libvlc_media_tracks_release( libvlc_media_track_t **p_tracks,
 LIBVLC_API
 libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md );
 
+
+/**
+ * \brief libvlc_media_get_thumbnail Start an asynchronous thumbnail generation
+ *
+ * In case of success, the thumbnail will be generated asynchronously, and will
+ * emit a libvlc_MediaThumbnailerGenerated upon completion.
+ * In case of failure, no event will be emited, and the thumbnail won't be
+ * generated.
+ *
+ * \param p_md media descriptor object
+ * \param i_time the time to generate a thumbail at
+ * \param i_width thumbnail's width
+ * \param i_height thumbnail's height
+ * \param psz_out path to write the thumbnail to
+ * \param psz_format thumbnail format ("png" or "jpg", defaults to "png")
+ * \return 0 on success, -1 on error
+ * \version libvlc 4.0 or later
+ */
+LIBVLC_API
+int libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
+                                    unsigned int i_width, unsigned int i_height,
+                                    const char* psz_format );
+
+LIBVLC_API
+void libvlc_media_thumbnail_cancel( libvlc_media_t *p_md );
+
 /**
  * Add a slave to the current media.
  *

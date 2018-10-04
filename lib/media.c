@@ -29,9 +29,9 @@
 #include <errno.h>
 
 #include <vlc/libvlc.h>
+#include <vlc/libvlc_picture.h>
 #include <vlc/libvlc_media.h>
 #include <vlc/libvlc_media_list.h> // For the subitems, here for convenience
-#include <vlc/libvlc_picture.h>
 #include <vlc/libvlc_events.h>
 
 #include <vlc_common.h>
@@ -1100,7 +1100,7 @@ struct thumbnail_request
     libvlc_media_t *p_md;
     unsigned int i_width;
     unsigned int i_height;
-    vlc_fourcc_t fourcc;
+    libvlc_picture_type_t i_type;
 };
 
 static void media_on_thumbnail_ready( void* data, picture_t* p_thumbnail )
@@ -1111,7 +1111,7 @@ static void media_on_thumbnail_ready( void* data, picture_t* p_thumbnail )
     event.type = libvlc_MediaThumbnailerGenerated;
     libvlc_picture_t* p_pic = libvlc_picture_new(
             VLC_OBJECT(p_media->p_libvlc_instance->p_libvlc_int), p_thumbnail,
-            req->fourcc, req->i_width, req->i_height );
+            req->i_type, req->i_width, req->i_height );
     event.u.media_thumbnail_generated.p_thumbnail = p_pic;
     libvlc_event_send( &p_media->event_manager, &event );
     libvlc_picture_release( p_pic );
@@ -1121,7 +1121,7 @@ static void media_on_thumbnail_ready( void* data, picture_t* p_thumbnail )
 
 int libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
                                     unsigned int i_width, unsigned int i_height,
-                                    const char* psz_format )
+                                    libvlc_picture_type_t i_type )
 {
     assert( p_md );
     input_item_t *p_input_item = p_md->p_input_item;
@@ -1140,8 +1140,7 @@ int libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
     req->p_md = p_md;
     req->i_width = i_width;
     req->i_height = i_height;
-    req->fourcc = strcasecmp( psz_format, "jpg" ) == 0 ?
-                            VLC_CODEC_JPEG : VLC_CODEC_PNG;
+    req->i_type = i_type;
     libvlc_media_retain( p_md );
     if ( vlc_thumbnailer_Request( p_priv->p_thumbnailer, p_input_item,
                              VLC_TICK_FROM_MS( i_time ), req ) != VLC_SUCCESS )

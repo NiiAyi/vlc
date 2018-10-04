@@ -814,14 +814,16 @@ libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md );
  * \param i_width thumbnail's width
  * \param i_height thumbnail's height
  * \param psz_out path to write the thumbnail to
- * \param psz_format thumbnail format ("png" or "jpg", defaults to "png")
+ * \param i_type the image type
  * \return 0 on success, -1 on error
  * \version libvlc 4.0 or later
+ * \see libvlc_picture_t
+ * \see libvlc_picture_type_t
  */
 LIBVLC_API
 int libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
                                     unsigned int i_width, unsigned int i_height,
-                                    const char* psz_format );
+                                    libvlc_picture_type_t i_type );
 
 LIBVLC_API
 void libvlc_media_thumbnail_cancel( libvlc_media_t *p_md );

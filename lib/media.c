@@ -29,6 +29,7 @@
 #include <errno.h>
 
 #include <vlc/libvlc.h>
+#include <vlc/libvlc_picture.h>
 #include <vlc/libvlc_media.h>
 #include <vlc/libvlc_media_list.h> // For the subitems, here for convenience
 #include <vlc/libvlc_events.h>
@@ -38,12 +39,14 @@
 #include <vlc_meta.h>
 #include <vlc_playlist.h> /* For the preparser */
 #include <vlc_url.h>
+#include <vlc_thumbnailer.h>
 
 #include "../src/libvlc.h"
 
 #include "libvlc_internal.h"
 #include "media_internal.h"
 #include "media_list_internal.h"
+#include "picture_internal.h"
 
 static const vlc_meta_type_t libvlc_to_vlc_meta[] =
 {
@@ -1090,6 +1093,76 @@ libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md )
     default:
         return libvlc_media_type_unknown;
     }
+}
+
+struct libvlc_media_thumbnail_request_t
+{
+    libvlc_media_t *p_md;
+    unsigned int i_width;
+    unsigned int i_height;
+    libvlc_picture_type_t i_type;
+    vlc_thumbnailer_request_t* p_req;
+};
+
+static void media_on_thumbnail_ready( void* data, picture_t* p_thumbnail )
+{
+    libvlc_media_thumbnail_request_t *req = data;
+    libvlc_media_t *p_media = req->p_md;
+    libvlc_event_t event;
+    event.type = libvlc_MediaThumbnailGenerated;
+    libvlc_picture_t* p_pic = NULL;
+    if ( p_thumbnail != NULL )
+        p_pic = libvlc_picture_new( VLC_OBJECT(p_media->p_libvlc_instance->p_libvlc_int),
+                                    p_thumbnail, req->i_type, req->i_width, req->i_height );
+    event.u.media_thumbnail_generated.p_thumbnail = p_pic;
+    libvlc_event_send( &p_media->event_manager, &event );
+    if ( p_pic != NULL )
+        libvlc_picture_release( p_pic );
+    libvlc_media_release( p_media );
+    free( req );
+}
+
+libvlc_media_thumbnail_request_t*
+libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
+                                unsigned int i_width, unsigned int i_height,
+                                libvlc_picture_type_t i_type )
+{
+    assert( p_md );
+    libvlc_priv_t *p_priv = libvlc_priv(p_md->p_libvlc_instance->p_libvlc_int);
+    if( p_priv->p_thumbnailer == NULL )
+    {
+        p_priv->p_thumbnailer = vlc_thumbnailer_Create(
+                    VLC_OBJECT(p_md->p_libvlc_instance->p_libvlc_int) );
+        if ( unlikely( p_priv->p_thumbnailer == NULL ) )
+            return NULL;
+    }
+    libvlc_media_thumbnail_request_t *req = malloc( sizeof( *req ) );
+    if ( unlikely( req == NULL ) )
+        return NULL;
+    req->p_md = p_md;
+    req->i_width = i_width;
+    req->i_height = i_height;
+    req->i_type = i_type;
+    libvlc_media_retain( p_md );
+    req->p_req = vlc_thumbnailer_Request( p_priv->p_thumbnailer, p_md->p_input_item,
+                            VLC_TICK_FROM_MS( i_time ),media_on_thumbnail_ready,
+                            req );
+    if ( req->p_req == NULL )
+    {
+        free( req );
+        libvlc_media_release( p_md );
+        return NULL;
+    }
+    return req;
+}
+
+void libvlc_media_thumbnail_cancel( libvlc_media_thumbnail_request_t *p_req )
+{
+    libvlc_priv_t *p_priv = libvlc_priv(p_req->p_md->p_libvlc_instance->p_libvlc_int);
+    assert( p_priv->p_thumbnailer != NULL );
+    vlc_thumbnailer_Cancel( p_priv->p_thumbnailer, p_req->p_req );
+    libvlc_media_release( p_req->p_md );
+    free( p_req );
 }
 
 int libvlc_media_slaves_add( libvlc_media_t *p_md,

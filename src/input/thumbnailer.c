@@ -34,7 +34,6 @@
 struct vlc_thumbnailer_t
 {
     vlc_object_t* p_parent;
-    vlc_thumbnailer_cb p_cb;
     struct background_worker* worker;
 };
 
@@ -44,6 +43,8 @@ struct vlc_thumbnailer_request_t
     input_thread_t *p_input_thread;
     vlc_tick_t i_time;
     input_item_t *p_item;
+
+    vlc_thumbnailer_cb p_cb;
     void* p_data;
 
     vlc_mutex_t lock;
@@ -94,7 +95,7 @@ static void thumbnailer_request_ReleaseVoid( void* p_data )
     vlc_thumbnailer_request_t* p_request = p_data;
     // When cancelled by the background worker, signal the completion to the
     // user before releasing the resources
-    p_request->p_thumbnailer->p_cb( p_request->p_data, p_request->p_picture );
+    p_request->p_cb( p_request->p_data, p_request->p_picture );
     thumbnailer_request_Release( p_request );
 }
 
@@ -138,7 +139,7 @@ static int thumbnailer_request_Probe( void* owner, void* handle )
 vlc_thumbnailer_request_t*
 vlc_thumbnailer_Request( vlc_thumbnailer_t* p_thumbnailer,
                          input_item_t* p_input_item, vlc_tick_t i_time,
-                         void* p_data )
+                         vlc_thumbnailer_cb p_cb, void* p_data )
 {
     vlc_thumbnailer_request_t *p_request = malloc( sizeof( *p_request ) );
     if ( unlikely( p_request == NULL ) )
@@ -148,6 +149,7 @@ vlc_thumbnailer_Request( vlc_thumbnailer_t* p_thumbnailer,
     p_request->p_item = input_item_Hold( p_input_item );
     p_request->b_done = false;
     p_request->p_picture = NULL;
+    p_request->p_cb = p_cb;
     p_request->p_data = p_data;
     vlc_mutex_init( &p_request->lock );
 
@@ -166,14 +168,12 @@ void vlc_thumbnailer_Cancel( vlc_thumbnailer_t* p_thumbnailer,
     background_worker_Cancel( p_thumbnailer->worker, p_req );
 }
 
-vlc_thumbnailer_t *vlc_thumbnailer_Create( vlc_object_t* p_parent,
-                                           vlc_thumbnailer_cb p_cb )
+vlc_thumbnailer_t *vlc_thumbnailer_Create( vlc_object_t* p_parent)
 {
     vlc_thumbnailer_t *p_thumbnailer = malloc( sizeof( *p_thumbnailer ) );
     if ( unlikely( p_thumbnailer == NULL ) )
         return NULL;
     p_thumbnailer->p_parent = p_parent;
-    p_thumbnailer->p_cb = p_cb;
     struct background_worker_config cfg = {
         .default_timeout = vlc_tick_from_secf( 5.f ),
         .max_threads = 1,

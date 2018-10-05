@@ -44,11 +44,10 @@ typedef void(*vlc_thumbnailer_cb)( void* data, picture_t* p_thumbnail );
 /**
  * @brief vlc_thumbnailer_Create Creates an asynchrone thumbnailer object
  * @param p_parent A VLC object
- * @param p_cb A callback to be invoked upon completion
  * @return A thumbnailer object, or NULL in case of failure
  */
 VLC_API vlc_thumbnailer_t*
-vlc_thumbnailer_Create( vlc_object_t* p_parent, vlc_thumbnailer_cb p_cb )
+vlc_thumbnailer_Create( vlc_object_t* p_parent )
 VLC_USED;
 
 /**
@@ -56,6 +55,7 @@ VLC_USED;
  * @param p_thumbnailer
  * @param p_input_item
  * @param i_time
+ * @param p_cb A callback to be invoked upon completion
  * @param p_data
  * @return
  *
@@ -67,7 +67,7 @@ VLC_USED;
 VLC_API vlc_thumbnailer_request_t*
 vlc_thumbnailer_Request( vlc_thumbnailer_t *p_thumbnailer,
                          input_item_t* p_input_item, vlc_tick_t i_time,
-                         void* p_data );
+                         vlc_thumbnailer_cb p_cb, void* p_data );
 
 VLC_API void
 vlc_thumbnailer_Cancel( vlc_thumbnailer_t* p_thumbnailer, vlc_thumbnailer_request_t* p_request );

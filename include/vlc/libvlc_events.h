@@ -88,7 +88,7 @@ enum libvlc_event_e {
      * A thumbnail generation for this \link #libvlc_media_t media \endlink completed.
      * \see libvlc_media_get_thumbnail()
      */
-    libvlc_MediaThumbnailerGenerated,
+    libvlc_MediaThumbnailGenerated,
 
     libvlc_MediaPlayerMediaChanged=0x100,
     libvlc_MediaPlayerNothingSpecial,

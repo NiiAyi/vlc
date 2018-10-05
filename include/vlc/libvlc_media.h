@@ -28,6 +28,8 @@
 
 # ifdef __cplusplus
 extern "C" {
+# else
+#  include <stdbool.h>
 # endif
 
 /** \defgroup libvlc_media LibVLC media
@@ -799,6 +801,60 @@ void libvlc_media_tracks_release( libvlc_media_track_t **p_tracks,
  */
 LIBVLC_API
 libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md );
+
+/**
+ * \brief libvlc_media_thumbnail_request_t An opaque thumbnail request object
+ */
+typedef struct libvlc_media_thumbnail_request_t libvlc_media_thumbnail_request_t;
+
+typedef struct libvlc_media_thumbnail_params_t
+{
+    union
+    {
+        libvlc_time_t i_time;
+        float f_pos;
+    };
+    enum
+    {
+        libvlc_media_thumbnail_seek_time,
+        libvlc_media_thumbnail_seek_pos,
+    } i_seek_type;
+    bool b_fast_seek;
+    unsigned int i_width;
+    unsigned int i_height;
+    libvlc_picture_type_t i_picture_type;
+    libvlc_time_t i_timeout;
+} libvlc_media_thumbnail_params_t;
+
+/**
+ * \brief libvlc_media_get_thumbnail Start an asynchronous thumbnail generation
+ *
+ * If the request is successfuly queued, the libvlc_MediaThumbnailGenerated
+ * is guaranteed to be emited.
+ *
+ * \param p_md media descriptor object
+ * \params p_params A pointer to a thumbnailer generation parameters structure
+ * \return A valid opaque request object, or NULL in case of failure.
+ *
+ * \version libvlc 4.0 or later
+ *
+ * \see libvlc_picture_t
+ * \see libvlc_picture_type_t
+ */
+LIBVLC_API libvlc_media_thumbnail_request_t*
+libvlc_media_thumbnail_request( libvlc_media_t *p_md,
+                                const libvlc_media_thumbnail_params_t* p_params );
+
+/**
+ * @brief libvlc_media_thumbnail_cancel cancels a thumbnailing request
+ * @param p_req An opaque thumbnail request object.
+ *
+ * Cancelling the request will still cause libvlc_MediaThumbnailGenerated event
+ * to be emited, with a NULL libvlc_picture_t
+ * If the request is cancelled after its completion, the behavior is undefined.
+ */
+LIBVLC_API void
+libvlc_media_thumbnail_cancel( libvlc_media_thumbnail_request_t *p_req );
 
 /**
  * Add a slave to the current media.

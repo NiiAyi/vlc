@@ -63,6 +63,7 @@
 #include <vlc_url.h>
 #include <vlc_modules.h>
 #include <vlc_media_library.h>
+#include <vlc_thumbnailer.h>
 
 #include "libvlc.h"
 #include "playlist/playlist_internal.h"
@@ -374,6 +375,9 @@ void libvlc_InternalCleanup( libvlc_int_t *p_libvlc )
     /* Ask the interfaces to stop and destroy them */
     msg_Dbg( p_libvlc, "removing all interfaces" );
     intf_DestroyAll( p_libvlc );
+
+    if ( priv->p_thumbnailer )
+        vlc_thumbnailer_Release( priv->p_thumbnailer );
 
     if ( priv->p_media_library )
         libvlc_MlRelease( priv->p_media_library );

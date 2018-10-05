@@ -31,6 +31,12 @@ typedef struct vlc_thumbnailer_request_t vlc_thumbnailer_request_t;
 /**
  * @brief vlc_thumbnailer_cb_t defines a callback invoked on thumbnailing completion.
  *
+ * This callback will always be called, provided vlc_thumbnailer_Request returned
+ * a non NULL request.
+ * In case of failure, p_thumbnail will be NULL.
+ * The picture, if any, is owned by the thumbnail, and must be acquired by using
+ * \link picture_Hold \endlink to use it passed the callback's scope.
+ *
  * @param data Is the opaque pointer passed as vlc_thumbnailer_Create last parameter
  */
 typedef void(*vlc_thumbnailer_cb)( void* data, picture_t* p_thumbnail );

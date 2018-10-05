@@ -1110,9 +1110,10 @@ static void media_on_thumbnail_ready( void* data, picture_t* p_thumbnail )
     libvlc_media_t *p_media = req->p_md;
     libvlc_event_t event;
     event.type = libvlc_MediaThumbnailerGenerated;
-    libvlc_picture_t* p_pic = libvlc_picture_new(
-            VLC_OBJECT(p_media->p_libvlc_instance->p_libvlc_int), p_thumbnail,
-            req->i_type, req->i_width, req->i_height );
+    libvlc_picture_t* p_pic = NULL;
+    if ( p_thumbnail != NULL )
+        p_pic = libvlc_picture_new( VLC_OBJECT(p_media->p_libvlc_instance->p_libvlc_int),
+                                    p_thumbnail, req->i_type, req->i_width, req->i_height );
     event.u.media_thumbnail_generated.p_thumbnail = p_pic;
     libvlc_event_send( &p_media->event_manager, &event );
     libvlc_picture_release( p_pic );

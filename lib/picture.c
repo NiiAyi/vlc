@@ -40,6 +40,7 @@ struct libvlc_picture_t
     libvlc_picture_type_t i_type;
     block_t* p_converted;
     video_format_t fmt;
+    libvlc_time_t i_time;
 };
 
 libvlc_picture_t* libvlc_picture_new( vlc_object_t* p_obj, picture_t* p_input,
@@ -51,6 +52,7 @@ libvlc_picture_t* libvlc_picture_new( vlc_object_t* p_obj, picture_t* p_input,
         return NULL;
     vlc_atomic_rc_init( &p_pic->rc );
     p_pic->i_type = i_type;
+    p_pic->i_time = MS_FROM_VLC_TICK( p_input->date );
     vlc_fourcc_t format;
     switch ( i_type )
     {
@@ -127,4 +129,9 @@ unsigned int libvlc_picture_get_width( const libvlc_picture_t* p_pic )
 unsigned int libvlc_picture_get_height( const libvlc_picture_t* p_pic )
 {
     return p_pic->fmt.i_visible_height;
+}
+
+libvlc_time_t libvlc_picture_get_time( const libvlc_picture_t* p_pic )
+{
+    return p_pic->i_time;
 }

@@ -113,6 +113,13 @@ libvlc_picture_get_width( const libvlc_picture_t* p_pic );
 LIBVLC_API unsigned int
 libvlc_picture_get_height( const libvlc_picture_t* p_pic );
 
+/**
+ * Returns the time at which this picture was generated, in milliseconds
+ * \param p_pic A picture object
+ */
+LIBVLC_API libvlc_time_t
+libvlc_picture_get_time( const libvlc_picture_t* p_pic );
+
 # ifdef __cplusplus
 }
 # endif

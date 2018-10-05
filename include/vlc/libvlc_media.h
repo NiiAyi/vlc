@@ -800,24 +800,26 @@ void libvlc_media_tracks_release( libvlc_media_track_t **p_tracks,
 LIBVLC_API
 libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md );
 
+/**
+ * \brief libvlc_media_thumbnail_request_t An opaque thumbnail request object
+ */
 typedef struct libvlc_media_thumbnail_request_t libvlc_media_thumbnail_request_t;
 
 /**
  * \brief libvlc_media_get_thumbnail Start an asynchronous thumbnail generation
  *
- * In case of success, the thumbnail will be generated asynchronously, and will
- * emit a libvlc_MediaThumbnailerGenerated upon completion.
- * In case of failure, no event will be emited, and the thumbnail won't be
- * generated.
+ * If the request is successfuly queued, the libvlc_MediaThumbnailGenerated
+ * is guaranteed to be emited.
  *
  * \param p_md media descriptor object
  * \param i_time the time to generate a thumbail at
  * \param i_width thumbnail's width
  * \param i_height thumbnail's height
- * \param psz_out path to write the thumbnail to
  * \param i_type the image type
- * \return 0 on success, -1 on error
+ * \return A valid opaque request object, or NULL in case of failure.
+ *
  * \version libvlc 4.0 or later
+ *
  * \see libvlc_picture_t
  * \see libvlc_picture_type_t
  */
@@ -826,6 +828,14 @@ libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
                                 unsigned int i_width, unsigned int i_height,
                                 libvlc_picture_type_t i_type );
 
+/**
+ * @brief libvlc_media_thumbnail_cancel cancels a thumbnailing request
+ * @param p_req An opaque thumbnail request object.
+ *
+ * Cancelling the request will still cause libvlc_MediaThumbnailGenerated event
+ * to be emited, with a NULL libvlc_picture_t
+ * If the request is cancelled after its completion, the behavior is undefined.
+ */
 LIBVLC_API void
 libvlc_media_thumbnail_cancel( libvlc_media_thumbnail_request_t *p_req );
 

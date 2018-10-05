@@ -29,7 +29,7 @@ typedef struct vlc_thumbnailer_t vlc_thumbnailer_t;
 typedef struct vlc_thumbnailer_request_t vlc_thumbnailer_request_t;
 
 /**
- * @brief vlc_thumbnailer_cb_t defines a callback invoked on thumbnailing completion.
+ * @brief vlc_thumbnailer_cb defines a callback invoked on thumbnailing completion.
  *
  * This callback will always be called, provided vlc_thumbnailer_Request returned
  * a non NULL request.

@@ -1095,17 +1095,18 @@ libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md )
     }
 }
 
-struct thumbnail_request
+struct libvlc_media_thumbnail_request_t
 {
     libvlc_media_t *p_md;
     unsigned int i_width;
     unsigned int i_height;
     libvlc_picture_type_t i_type;
+    vlc_thumbnailer_request_t* p_req;
 };
 
 static void media_on_thumbnail_ready( void* data, picture_t* p_thumbnail )
 {
-    struct thumbnail_request *req = data;
+    libvlc_media_thumbnail_request_t *req = data;
     libvlc_media_t *p_media = req->p_md;
     libvlc_event_t event;
     event.type = libvlc_MediaThumbnailerGenerated;
@@ -1119,9 +1120,10 @@ static void media_on_thumbnail_ready( void* data, picture_t* p_thumbnail )
     free( req );
 }
 
-int libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
-                                    unsigned int i_width, unsigned int i_height,
-                                    libvlc_picture_type_t i_type )
+libvlc_media_thumbnail_request_t*
+libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
+                                unsigned int i_width, unsigned int i_height,
+                                libvlc_picture_type_t i_type )
 {
     assert( p_md );
     input_item_t *p_input_item = p_md->p_input_item;
@@ -1129,33 +1131,35 @@ int libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
     if( p_priv->p_thumbnailer == NULL )
     {
         p_priv->p_thumbnailer = vlc_thumbnailer_Create(
-                    VLC_OBJECT(p_md->p_libvlc_instance->p_libvlc_int),
-                    media_on_thumbnail_ready );
+                    VLC_OBJECT(p_md->p_libvlc_instance->p_libvlc_int) );
         if ( unlikely( p_priv->p_thumbnailer == NULL ) )
-            return -1;
+            return NULL;
     }
-    struct thumbnail_request *req = malloc( sizeof( *req ) );
+    libvlc_media_thumbnail_request_t *req = malloc( sizeof( *req ) );
     if ( unlikely( req == NULL ) )
-        return -1;
+        return NULL;
     req->p_md = p_md;
     req->i_width = i_width;
     req->i_height = i_height;
     req->i_type = i_type;
     libvlc_media_retain( p_md );
-    if ( vlc_thumbnailer_Request( p_priv->p_thumbnailer, p_input_item,
-                             VLC_TICK_FROM_MS( i_time ), req ) != VLC_SUCCESS )
+    req->p_req = vlc_thumbnailer_Request( p_priv->p_thumbnailer, p_input_item,
+                            VLC_TICK_FROM_MS( i_time ),media_on_thumbnail_ready,
+                            req );
+    if ( req->p_req == NULL )
     {
+        free( req );
         libvlc_media_release( p_md );
-        return -1;
+        return NULL;
     }
-    return 0;
+    return req;
 }
 
-void libvlc_media_thumbnail_cancel( libvlc_media_t *p_md )
+void libvlc_media_thumbnail_cancel( libvlc_media_thumbnail_request_t *p_req )
 {
-    libvlc_priv_t *p_priv = libvlc_priv(p_md->p_libvlc_instance->p_libvlc_int);
+    libvlc_priv_t *p_priv = libvlc_priv(p_req->p_md->p_libvlc_instance->p_libvlc_int);
     assert( p_priv->p_thumbnailer != NULL );
-    vlc_thumbnailer_Cancel( p_priv->p_thumbnailer, p_md->p_input_item );
+    vlc_thumbnailer_Cancel( p_priv->p_thumbnailer, p_req->p_req );
 }
 
 int libvlc_media_slaves_add( libvlc_media_t *p_md,

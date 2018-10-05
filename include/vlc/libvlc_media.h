@@ -800,6 +800,7 @@ void libvlc_media_tracks_release( libvlc_media_track_t **p_tracks,
 LIBVLC_API
 libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md );
 
+typedef struct libvlc_media_thumbnail_request_t libvlc_media_thumbnail_request_t;
 
 /**
  * \brief libvlc_media_get_thumbnail Start an asynchronous thumbnail generation
@@ -820,13 +821,13 @@ libvlc_media_type_t libvlc_media_get_type( libvlc_media_t *p_md );
  * \see libvlc_picture_t
  * \see libvlc_picture_type_t
  */
-LIBVLC_API
-int libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
-                                    unsigned int i_width, unsigned int i_height,
-                                    libvlc_picture_type_t i_type );
+LIBVLC_API libvlc_media_thumbnail_request_t*
+libvlc_media_thumbnail_request( libvlc_media_t *p_md, libvlc_time_t i_time,
+                                unsigned int i_width, unsigned int i_height,
+                                libvlc_picture_type_t i_type );
 
-LIBVLC_API
-void libvlc_media_thumbnail_cancel( libvlc_media_t *p_md );
+LIBVLC_API void
+libvlc_media_thumbnail_cancel( libvlc_media_thumbnail_request_t *p_req );
 
 /**
  * Add a slave to the current media.

@@ -58,13 +58,13 @@ VLC_USED;
  * must be called to release the resources, even when the callback gets
  * invoked with an error status.
  */
-VLC_API int
+VLC_API vlc_thumbnailer_request_t*
 vlc_thumbnailer_Request( vlc_thumbnailer_t *p_thumbnailer,
                          input_item_t* p_input_item, vlc_tick_t i_time,
                          void* p_data );
 
 VLC_API void
-vlc_thumbnailer_Cancel( vlc_thumbnailer_t* p_thumbnailer, input_item_t* p_item );
+vlc_thumbnailer_Cancel( vlc_thumbnailer_t* p_thumbnailer, vlc_thumbnailer_request_t* p_request );
 
 /**
  * @brief vlc_thumbnailer_Release releases a thumbnailer and stop all processing

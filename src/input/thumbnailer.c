@@ -80,13 +80,22 @@ static void thumbnailer_request_Hold( void* p_data )
     VLC_UNUSED(p_data);
 }
 
-static void thumbnailer_request_Release( void* p_data )
+
+static void thumbnailer_request_Release( vlc_thumbnailer_request_t* p_request )
 {
-    vlc_thumbnailer_request_t* p_request = p_data;
     vlc_mutex_destroy( &p_request->lock );
     if ( p_request->p_picture )
         picture_Release( p_request->p_picture );
     free( p_request );
+}
+
+static void thumbnailer_request_ReleaseVoid( void* p_data )
+{
+    vlc_thumbnailer_request_t* p_request = p_data;
+    // When cancelled by the background worker, signal the completion to the
+    // user before releasing the resources
+    p_request->p_thumbnailer->p_cb( p_request->p_data, p_request->p_picture );
+    thumbnailer_request_Release( p_request );
 }
 
 static int thumbnailer_request_Start( void* owner, void* entity, void** out )
@@ -109,12 +118,11 @@ static int thumbnailer_request_Start( void* owner, void* entity, void** out )
 
 static void thumbnailer_request_Stop( void* owner, void* handle )
 {
-    vlc_thumbnailer_t *p_thumbnailer = owner;
+    VLC_UNUSED(owner);
     vlc_thumbnailer_request_t *p_request = handle;
     assert( p_request->p_input_thread != NULL );
     input_Stop( p_request->p_input_thread );
     input_Close( p_request->p_input_thread );
-    p_thumbnailer->p_cb( p_request->p_data, p_request->p_picture );
 }
 
 static int thumbnailer_request_Probe( void* owner, void* handle )
@@ -127,14 +135,14 @@ static int thumbnailer_request_Probe( void* owner, void* handle )
     return res;
 }
 
-int
+vlc_thumbnailer_request_t*
 vlc_thumbnailer_Request( vlc_thumbnailer_t* p_thumbnailer,
                          input_item_t* p_input_item, vlc_tick_t i_time,
                          void* p_data )
 {
     vlc_thumbnailer_request_t *p_request = malloc( sizeof( *p_request ) );
     if ( unlikely( p_request == NULL ) )
-        return VLC_ENOMEM;
+        return NULL;
     p_request ->p_thumbnailer = p_thumbnailer;
     p_request->i_time = i_time;
     p_request->p_item = input_item_Hold( p_input_item );
@@ -144,17 +152,18 @@ vlc_thumbnailer_Request( vlc_thumbnailer_t* p_thumbnailer,
     vlc_mutex_init( &p_request->lock );
 
     if ( background_worker_Push( p_thumbnailer->worker, p_request,
-                                 p_input_item, -1 ) != VLC_SUCCESS )
+                                 p_request, -1 ) != VLC_SUCCESS )
     {
         thumbnailer_request_Release( p_request );
-        return VLC_ENOMEM;
+        return NULL;
     }
-    return VLC_SUCCESS;
+    return p_request;
 }
 
-void vlc_thumbnailer_Cancel( vlc_thumbnailer_t* p_thumbnailer, input_item_t* p_item )
+void vlc_thumbnailer_Cancel( vlc_thumbnailer_t* p_thumbnailer,
+                             vlc_thumbnailer_request_t* p_req )
 {
-    background_worker_Cancel( p_thumbnailer->worker, p_item );
+    background_worker_Cancel( p_thumbnailer->worker, p_req );
 }
 
 vlc_thumbnailer_t *vlc_thumbnailer_Create( vlc_object_t* p_parent,
@@ -168,7 +177,7 @@ vlc_thumbnailer_t *vlc_thumbnailer_Create( vlc_object_t* p_parent,
     struct background_worker_config cfg = {
         .default_timeout = vlc_tick_from_secf( 5.f ),
         .max_threads = 1,
-        .pf_release = thumbnailer_request_Release,
+        .pf_release = thumbnailer_request_ReleaseVoid,
         .pf_hold = thumbnailer_request_Hold,
         .pf_start = thumbnailer_request_Start,
         .pf_probe = thumbnailer_request_Probe,

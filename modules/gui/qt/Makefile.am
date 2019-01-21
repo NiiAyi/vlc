@@ -509,6 +509,7 @@ libqt_plugin_la_RES = \
 	gui/qt/qml/utils/IconToolButton.qml \
 	gui/qt/qml/utils/ImageToolButton.qml \
 	gui/qt/qml/utils/TextToolButton.qml \
+	gui/qt/qml/utils/MultiCoverPreview.qml \
 	gui/qt/qml/utils/NavigableFocusScope.qml \
 	gui/qt/qml/utils/KeyNavigableGridView.qml \
 	gui/qt/qml/utils/KeyNavigableListView.qml \

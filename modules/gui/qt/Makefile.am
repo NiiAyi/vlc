@@ -530,6 +530,7 @@ libqt_plugin_la_RES = \
 	gui/qt/qml/utils/SelectableDelegateModel.qml \
 	gui/qt/qml/utils/ComboBoxExt.qml \
 	gui/qt/qml/utils/StackViewExt.qml \
+	gui/qt/qml/utils/ScanProgressBar.qml \
 	gui/qt/qml/mediacenter/ArtistListView.qml \
 	gui/qt/qml/mediacenter/ArtistTopBanner.qml \
 	gui/qt/qml/mediacenter/MCMainDisplay.qml \

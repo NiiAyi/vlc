@@ -447,6 +447,7 @@ libqt_plugin_la_RES = \
 	gui/qt/pixmaps/slower2.svg \
 	gui/qt/pixmaps/space.svg \
 	gui/qt/pixmaps/stop.svg \
+	gui/qt/pixmaps/toolbar/audiosub.svg \
 	gui/qt/pixmaps/toolbar/arrows.svg \
 	gui/qt/pixmaps/toolbar/aspect-ratio.svg \
 	gui/qt/pixmaps/toolbar/atob.svg \
